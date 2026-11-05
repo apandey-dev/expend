@@ -32,7 +32,9 @@ import com.expend.tracker.ui.settings.SettingsScreen
 import com.expend.tracker.ui.templates.AddEditTemplateScreen
 import com.expend.tracker.ui.templates.TemplatesScreen
 import com.expend.tracker.ui.transactions.AddEditTransactionScreen
+import com.expend.tracker.ui.transactions.AllTransactionsScreen
 import com.expend.tracker.ui.transactions.TransactionsScreen
+import com.expend.tracker.ui.transactions.WalletTransactionsScreen
 import com.expend.tracker.ui.wallets.AddEditWalletScreen
 import com.expend.tracker.ui.wallets.WalletsScreen
 import com.expend.tracker.viewmodel.ExpendViewModel
@@ -102,9 +104,7 @@ fun MainApp(
                             navController.navigate(NavRoutes.editTransaction(id))
                         },
                         onNavigateToAllTransactions = {
-                            navController.navigate(NavRoutes.TRANSACTIONS) {
-                                launchSingleTop = true
-                            }
+                            navController.navigate(NavRoutes.ALL_TRANSACTIONS)
                         },
                         onNavigateToSettings = {
                             navController.navigate(NavRoutes.SETTINGS)
@@ -145,8 +145,7 @@ fun MainApp(
                         onNavigateToAddWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
                         onNavigateToEditWallet = { walletId -> navController.navigate(NavRoutes.editWallet(walletId)) },
                         onNavigateToTransactionsForWallet = { walletId ->
-                            viewModel.setWalletFilter(walletId)
-                            navController.navigate(NavRoutes.TRANSACTIONS)
+                            navController.navigate(NavRoutes.walletTransactions(walletId))
                         }
                     )
                 }
@@ -214,6 +213,45 @@ fun MainApp(
                         onNavigateToCreateWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
                         onNavigateToCreateCategory = { type -> navController.navigate(NavRoutes.addCategory(type)) },
                         onNavigateToCreateTemplate = { type -> navController.navigate(NavRoutes.addTemplate(type)) }
+                    )
+                }
+
+                // DEDICATED ALL TRANSACTIONS (Home -> View All, Contextual Standalone Page, Bottom Nav Hidden)
+                composable(NavRoutes.ALL_TRANSACTIONS) {
+                    AllTransactionsScreen(
+                        viewModel = viewModel,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToAddTransaction = {
+                            navController.navigate(NavRoutes.addTransaction(TransactionType.EXPENSE))
+                        },
+                        onNavigateToTransfer = {
+                            navController.navigate(NavRoutes.addTransaction(TransactionType.TRANSFER))
+                        },
+                        onNavigateToEditTransaction = { id ->
+                            navController.navigate(NavRoutes.editTransaction(id))
+                        }
+                    )
+                }
+
+                // DEDICATED WALLET TRANSACTIONS (Wallets -> View Transactions, Contextual Standalone Page, Bottom Nav Hidden)
+                composable(
+                    route = NavRoutes.WALLET_TRANSACTIONS,
+                    arguments = listOf(navArgument("walletId") { type = NavType.LongType })
+                ) { backStackEntry ->
+                    val walletId = backStackEntry.arguments?.getLong("walletId") ?: 0L
+                    WalletTransactionsScreen(
+                        viewModel = viewModel,
+                        walletId = walletId,
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToAddTransaction = {
+                            navController.navigate(NavRoutes.addTransaction(TransactionType.EXPENSE))
+                        },
+                        onNavigateToTransfer = {
+                            navController.navigate(NavRoutes.addTransaction(TransactionType.TRANSFER))
+                        },
+                        onNavigateToEditTransaction = { id ->
+                            navController.navigate(NavRoutes.editTransaction(id))
+                        }
                     )
                 }
 

@@ -1,13 +1,15 @@
 package com.expend.tracker.data.models
 
-enum class WalletType(val displayName: String) {
-    CASH("Cash"),
-    BANK_ACCOUNT("Bank Account"),
-    DIGITAL_WALLET("Digital Wallet"),
-    CREDIT_CARD("Credit Card"),
-    SAVINGS("Savings"),
-    BUSINESS("Business"),
-    OTHER("Other");
+import com.expend.tracker.R
+
+enum class WalletType(val displayName: String, val stampDrawableRes: Int) {
+    CASH("Cash", R.drawable.ic_stamp_cash),
+    BANK_ACCOUNT("Bank Account", R.drawable.ic_stamp_bank),
+    DIGITAL_WALLET("Digital Wallet", R.drawable.ic_stamp_digital),
+    CREDIT_CARD("Credit Card", R.drawable.ic_stamp_card),
+    SAVINGS("Savings", R.drawable.ic_stamp_savings),
+    BUSINESS("Business", R.drawable.ic_stamp_business),
+    OTHER("Other", R.drawable.ic_stamp_other);
 
     companion object {
         fun fromString(value: String?): WalletType {

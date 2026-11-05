@@ -75,6 +75,13 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
             initialValue = emptyList()
         )
 
+    val allTransactionItems: StateFlow<List<TransactionItem>> = repository.allTransactionItemsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
+
     val templates: StateFlow<List<TemplateEntity>> = repository.allTemplatesFlow
         .stateIn(
             scope = viewModelScope,

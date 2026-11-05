@@ -58,6 +58,9 @@ object NavRoutes {
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
 
+    const val ALL_TRANSACTIONS = "all_transactions"
+    const val WALLET_TRANSACTIONS = "wallet_transactions/{walletId}"
+
     const val ADD_TRANSACTION = "add_transaction?type={type}"
     const val EDIT_TRANSACTION = "edit_transaction/{transactionId}"
     const val USE_TEMPLATE = "use_template/{templateId}"
@@ -76,6 +79,7 @@ object NavRoutes {
     fun editWallet(id: Long) = "edit_wallet/$id"
     fun addCategory(type: TransactionType = TransactionType.EXPENSE) = "add_category?type=${type.name}"
     fun editCategory(id: Long) = "edit_category/$id"
+    fun walletTransactions(walletId: Long) = "wallet_transactions/$walletId"
     fun addTemplate(type: TransactionType = TransactionType.EXPENSE) = "add_template?type=${type.name}"
     fun useTemplate(templateId: Long) = "use_template/$templateId"
     fun editTemplate(id: Long) = "edit_template/$id"

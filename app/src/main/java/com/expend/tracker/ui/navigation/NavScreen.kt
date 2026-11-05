@@ -57,7 +57,6 @@ object NavRoutes {
     const val WALLETS = "wallets"
     const val CATEGORIES = "categories"
     const val SETTINGS = "settings"
-    const val VIEW_ALL_TRANSACTIONS = "view_all_transactions"
 
     const val ADD_TRANSACTION = "add_transaction?type={type}"
     const val EDIT_TRANSACTION = "edit_transaction/{transactionId}"

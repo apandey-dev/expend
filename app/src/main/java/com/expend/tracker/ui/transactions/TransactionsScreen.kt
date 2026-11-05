@@ -87,8 +87,13 @@ fun TransactionsScreen(
     val detailsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val activeFilteredWallet = activeWallets.firstOrNull { it.id == selectedWalletId }
 
-    // Native Back Handling
-    BackHandler {
+    val isBackHandledLocally = selectedTransactionForDetails != null ||
+            transactionToDelete != null ||
+            isSearchExpanded ||
+            selectedWalletId != null
+
+    // Native Back Handling (Intercepts only when local state needs popping)
+    BackHandler(enabled = isBackHandledLocally) {
         when {
             selectedTransactionForDetails != null -> selectedTransactionForDetails = null
             transactionToDelete != null -> transactionToDelete = null
@@ -119,7 +124,7 @@ fun TransactionsScreen(
             .statusBarsPadding()
             .padding(horizontal = 16.dp)
     ) {
-        // ─── TOP HEADER WITH SEARCH ICON & TITLE ─────────────────────────────
+        // ─── TOP HEADER WITH COMPACT TRANSFER & SEARCH ICON ─────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -135,7 +140,28 @@ fun TransactionsScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Compact Transfer action
+                Text(
+                    text = "Transfer",
+                    fontFamily = MaliFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                        .clickable(onClick = onNavigateToTransfer)
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                )
+
                 // Search toggle icon
                 IconButton(
                     onClick = {
@@ -189,14 +215,6 @@ fun TransactionsScreen(
                 Spacer(modifier = Modifier.height(6.dp))
             }
         }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        // ─── TRANSFER BETWEEN WALLETS ACTION ─────────────────────────────────
-        MonochromeOutlinedButton(
-            text = "Transfer Between Wallets",
-            onClick = onNavigateToTransfer
-        )
 
         Spacer(modifier = Modifier.height(10.dp))
 
@@ -325,11 +343,7 @@ fun TransactionsScreen(
                             onClick = { selectedTransactionForDetails = item },
                             onLongClick = { onNavigateToEditTransaction(item.transaction.id) }
                         )
-                        HorizontalDivider(
-                            thickness = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f),
-                            modifier = Modifier.padding(horizontal = 4.dp)
-                        )
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
 
@@ -439,11 +453,18 @@ private fun TransactionListItem(
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
+                shape = RoundedCornerShape(10.dp)
+            )
+            .background(MaterialTheme.colorScheme.surface)
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
-            .padding(vertical = 10.dp, horizontal = 4.dp)
+            .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),

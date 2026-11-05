@@ -151,4 +151,28 @@ class FinancialCalculationTest {
         assertEquals(0L, monthlyIncome)
         assertEquals(250000L, monthlyExpense) // Exactly ₹2,500, not ₹52,500
     }
+
+    @Test
+    fun paymentModes_exact15OptionsAndOrder_arePreserved() {
+        val expected = listOf(
+            "UPI",
+            "Debit Card",
+            "Credit Card",
+            "Net Banking",
+            "IMPS",
+            "NEFT",
+            "RTGS",
+            "Samsung Wallet",
+            "Cash",
+            "Cheque",
+            "Bank Transfer",
+            "Auto Debit",
+            "EMI",
+            "Gift Card",
+            "Voucher"
+        )
+
+        assertEquals(15, com.expend.tracker.data.models.PaymentModes.options.size)
+        assertEquals(expected, com.expend.tracker.data.models.PaymentModes.options)
+    }
 }

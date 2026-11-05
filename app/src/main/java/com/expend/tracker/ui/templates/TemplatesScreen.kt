@@ -213,7 +213,7 @@ private fun TemplateItemCard(
                         .height(38.dp)
                 )
 
-                // 2. Edit
+                // 2. Edit (Container)
                 MonochromeOutlinedButton(
                     text = "Edit",
                     onClick = onEdit,
@@ -222,21 +222,14 @@ private fun TemplateItemCard(
                         .height(38.dp)
                 )
 
-                // 3. Delete
-                TextButton(
+                // 3. Delete (Container)
+                MonochromeOutlinedButton(
+                    text = "Delete",
                     onClick = onDelete,
                     modifier = Modifier
                         .weight(0.85f)
                         .height(38.dp)
-                ) {
-                    Text(
-                        text = "Delete",
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                )
             }
         }
     }

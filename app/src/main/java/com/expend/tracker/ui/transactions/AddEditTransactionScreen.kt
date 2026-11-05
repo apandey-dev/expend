@@ -101,6 +101,7 @@ fun AddEditTransactionScreen(
     var showSourceWalletSheet by remember { mutableStateOf(false) }
     var showDestWalletSheet by remember { mutableStateOf(false) }
     var showCategorySheet by remember { mutableStateOf(false) }
+    var showPaymentModeSheet by remember { mutableStateOf(false) }
     var showDatePickerSheet by remember { mutableStateOf(false) }
     var showTimePickerSheet by remember { mutableStateOf(false) }
     var showTemplateSheet by remember { mutableStateOf(false) }
@@ -108,6 +109,7 @@ fun AddEditTransactionScreen(
     val sourceSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val destSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val categorySheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val paymentModeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val datePickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val timePickerSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val templateSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -118,6 +120,7 @@ fun AddEditTransactionScreen(
     // Native Back Handling
     BackHandler {
         when {
+            showPaymentModeSheet -> showPaymentModeSheet = false
             showTemplateSheet -> showTemplateSheet = false
             showDatePickerSheet -> showDatePickerSheet = false
             showTimePickerSheet -> showTimePickerSheet = false
@@ -342,7 +345,7 @@ fun AddEditTransactionScreen(
             }
         }
 
-        // ─── PAYMENT MODE (No Predefined Modes, Initially Empty) ─────────────
+        // ─── PAYMENT MODE (Dropdown Selection Component, Optional) ───────────
         if (transactionType != TransactionType.TRANSFER) {
             Column {
                 Text(
@@ -354,46 +357,38 @@ fun AddEditTransactionScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
 
-                MonochromeTextField(
-                    value = paymentMode,
-                    onValueChange = { paymentMode = it },
-                    label = "Payment Mode",
-                    placeholder = "e.g., UPI, Card, Cash"
-                )
-
-                // Show previously saved user payment modes as suggestion chips if available
-                if (userPaymentModes.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(6.dp))
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(userPaymentModes) { mode ->
-                            val isSelected = paymentMode.equals(mode, ignoreCase = true)
-                            val shape = RoundedCornerShape(8.dp)
-
-                            Box(
-                                modifier = Modifier
-                                    .clip(shape)
-                                    .background(
-                                        if (isSelected) MaterialTheme.colorScheme.onSurface
-                                        else MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                    .border(
-                                        width = 0.5.dp,
-                                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
-                                        shape = shape
-                                    )
-                                    .clickable { paymentMode = mode }
-                                    .padding(horizontal = 12.dp, vertical = 6.dp)
-                            ) {
-                                Text(
-                                    text = mode,
-                                    fontFamily = MaliFamily,
-                                    fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                    fontSize = 11.sp,
-                                    color = if (isSelected) MaterialTheme.colorScheme.surface
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(MaterialTheme.colorScheme.surface)
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .clickable { showPaymentModeSheet = true }
+                        .padding(horizontal = 14.dp, vertical = 14.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = paymentMode.ifEmpty { "Select Payment Mode" },
+                            fontFamily = MaliFamily,
+                            fontSize = 14.sp,
+                            fontWeight = if (paymentMode.isNotEmpty()) FontWeight.Medium else FontWeight.Normal,
+                            color = if (paymentMode.isNotEmpty()) MaterialTheme.colorScheme.onSurface
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "▼",
+                            fontFamily = MaliFamily,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
             }
@@ -838,6 +833,18 @@ fun AddEditTransactionScreen(
                 )
             },
             onDismiss = { showDestWalletSheet = false }
+        )
+    }
+
+    // ─── PAYMENT MODE SELECTION BOTTOM SHEET ────────────────────────────────
+    if (showPaymentModeSheet) {
+        PaymentModeSelectionBottomSheet(
+            sheetState = paymentModeSheetState,
+            selectedPaymentMode = paymentMode,
+            onSelectPaymentMode = { mode ->
+                paymentMode = mode
+            },
+            onDismiss = { showPaymentModeSheet = false }
         )
     }
 

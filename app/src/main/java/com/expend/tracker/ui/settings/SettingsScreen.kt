@@ -158,14 +158,14 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            // Equal-width action buttons: Export Backup File & Import from Backup
+            // Equal-width action buttons: Export Backup & Import Backup
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 MonochromePrimaryButton(
-                    text = "Export Backup File",
+                    text = "Export Backup",
                     onClick = {
                         val timestamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
                         val fileName = "expend_backup_$timestamp.json"
@@ -175,7 +175,7 @@ fun SettingsScreen(
                 )
 
                 MonochromeOutlinedButton(
-                    text = "Import from Backup",
+                    text = "Import Backup",
                     onClick = {
                         importLauncher.launch(arrayOf("application/json", "*/*"))
                     },

@@ -150,14 +150,18 @@ fun WalletsScreen(
             sheetState = detailsSheetState,
             walletItem = selectedWalletForDetails!!,
             onViewTransactions = {
-                val walletId = selectedWalletForDetails!!.wallet.id
+                val walletId = selectedWalletForDetails?.wallet?.id
                 selectedWalletForDetails = null
-                onNavigateToTransactionsForWallet(walletId)
+                if (walletId != null) {
+                    onNavigateToTransactionsForWallet(walletId)
+                }
             },
             onEditWallet = {
-                val walletId = selectedWalletForDetails!!.wallet.id
+                val walletId = selectedWalletForDetails?.wallet?.id
                 selectedWalletForDetails = null
-                onNavigateToEditWallet(walletId)
+                if (walletId != null) {
+                    onNavigateToEditWallet(walletId)
+                }
             },
             onDismiss = { selectedWalletForDetails = null }
         )
@@ -271,7 +275,9 @@ private fun WalletGridCard(
     onLongClick: () -> Unit
 ) {
     val wallet = item.wallet
-    val typeDisplayName = WalletType.fromString(wallet.walletType).displayName
+    val walletType = WalletType.fromString(wallet.walletType)
+    val typeDisplayName = walletType.displayName
+    val isCreditCard = walletType == WalletType.CREDIT_CARD
     val shape = RoundedCornerShape(12.dp)
 
     Box(
@@ -317,16 +323,26 @@ private fun WalletGridCard(
                 )
             }
 
-            // Bottom: Current Balance
-            Text(
-                text = CurrencyFormatter.formatPaise(item.currentBalancePaise),
-                fontFamily = MaliFamily,
-                fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
+            // Bottom: Current Balance / Outstanding
+            Column {
+                if (isCreditCard && item.currentBalancePaise < 0) {
+                    Text(
+                        text = "Outstanding",
+                        fontFamily = MaliFamily,
+                        fontSize = 10.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Text(
+                    text = CurrencyFormatter.formatPaise(item.currentBalancePaise),
+                    fontFamily = MaliFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
         }
     }
 }

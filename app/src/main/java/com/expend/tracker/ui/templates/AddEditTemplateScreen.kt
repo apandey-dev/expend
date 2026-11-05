@@ -58,6 +58,7 @@ import com.expend.tracker.viewmodel.ExpendViewModel
 fun AddEditTemplateScreen(
     viewModel: ExpendViewModel,
     templateId: Long? = null,
+    initialType: TransactionType = TransactionType.EXPENSE,
     onNavigateBack: () -> Unit,
     onNavigateToCreateWallet: () -> Unit = {},
     onNavigateToCreateCategory: (TransactionType) -> Unit = {},
@@ -71,10 +72,10 @@ fun AddEditTemplateScreen(
     val createdCategoryName by viewModel.newlyCreatedCategoryName.collectAsState()
 
     var name by rememberSaveable { mutableStateOf("") }
-    var templateType by rememberSaveable { mutableStateOf(TransactionType.EXPENSE) }
+    var templateType by rememberSaveable { mutableStateOf(initialType) }
     var defaultAmountInput by rememberSaveable { mutableStateOf("") }
     var title by rememberSaveable { mutableStateOf("") }
-    var category by rememberSaveable { mutableStateOf("Food & Dining") }
+    var category by rememberSaveable { mutableStateOf("") }
     var defaultWalletId by rememberSaveable { mutableStateOf<Long?>(null) }
     var note by rememberSaveable { mutableStateOf("") }
 
@@ -141,15 +142,12 @@ fun AddEditTemplateScreen(
                     defaultWalletId = tpl.defaultWalletId
                     note = tpl.note
                 }
+            } else {
+                val cats = if (initialType == TransactionType.EXPENSE) activeExpenseCategories else activeIncomeCategories
+                if (category.isEmpty() && cats.isNotEmpty()) {
+                    category = cats.first().name
+                }
             }
-        }
-    }
-
-    // Default category based on type
-    LaunchedEffect(templateType, activeExpenseCategories, activeIncomeCategories) {
-        val currentCats = if (templateType == TransactionType.EXPENSE) activeExpenseCategories else activeIncomeCategories
-        if (currentCats.none { it.name.equals(category, ignoreCase = true) }) {
-            category = currentCats.firstOrNull()?.name ?: "General"
         }
     }
 
@@ -287,7 +285,7 @@ fun AddEditTemplateScreen(
                         fontFamily = MaliFamily,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        color = if (category.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
                     )
                     Text(
                         text = "Choose",

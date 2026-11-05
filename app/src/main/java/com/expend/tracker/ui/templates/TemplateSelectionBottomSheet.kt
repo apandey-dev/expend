@@ -43,10 +43,15 @@ import com.expend.tracker.util.CurrencyFormatter
 fun TemplateSelectionBottomSheet(
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
     templates: List<TemplateEntity>,
+    transactionType: TransactionType = TransactionType.EXPENSE,
     onSelectTemplate: (TemplateEntity) -> Unit,
     onNavigateToCreateTemplate: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val isIncome = transactionType == TransactionType.INCOME
+    val titleText = if (isIncome) "Income Templates" else "Expense Templates"
+    val emptyMessage = "No saved ${if (isIncome) "income" else "expense"} templates found. Create a template to quickly prefill repetitive transactions."
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
@@ -75,7 +80,7 @@ fun TemplateSelectionBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Use Template",
+                    text = titleText,
                     fontFamily = MaliFamily,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 18.sp,
@@ -104,7 +109,7 @@ fun TemplateSelectionBottomSheet(
 
             if (templates.isEmpty()) {
                 MinimalEmptyState(
-                    message = "No saved templates found. Create a template to quickly prefill repetitive transactions.",
+                    message = emptyMessage,
                     actionText = "Create Template",
                     onActionClick = {
                         onDismiss()
@@ -117,8 +122,6 @@ fun TemplateSelectionBottomSheet(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     items(templates, key = { it.id }) { template ->
-                        val isIncome = template.type == TransactionType.INCOME.name
-
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -151,16 +154,17 @@ fun TemplateSelectionBottomSheet(
                                     Spacer(modifier = Modifier.height(2.dp))
                                     val subtitle = listOfNotNull(
                                         template.title.takeIf { it.isNotBlank() },
-                                        template.category.takeIf { it.isNotBlank() },
-                                        template.type.takeIf { it.isNotBlank() }
+                                        template.category.takeIf { it.isNotBlank() }
                                     ).joinToString(" • ")
 
-                                    Text(
-                                        text = subtitle,
-                                        fontFamily = MaliFamily,
-                                        fontSize = 11.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
+                                    if (subtitle.isNotBlank()) {
+                                        Text(
+                                            text = subtitle,
+                                            fontFamily = MaliFamily,
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
                                 }
 
                                 if (template.defaultAmountPaise != null) {

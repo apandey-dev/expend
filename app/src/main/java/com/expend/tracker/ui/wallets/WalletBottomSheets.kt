@@ -45,7 +45,9 @@ fun WalletDetailsBottomSheet(
     onDismiss: () -> Unit
 ) {
     val wallet = walletItem.wallet
-    val typeDisplayName = WalletType.fromString(wallet.walletType).displayName
+    val walletType = WalletType.fromString(wallet.walletType)
+    val typeDisplayName = walletType.displayName
+    val isCreditCard = walletType == WalletType.CREDIT_CARD
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -92,13 +94,23 @@ fun WalletDetailsBottomSheet(
                     )
                 }
 
-                Text(
-                    text = CurrencyFormatter.formatPaise(walletItem.currentBalancePaise),
-                    fontFamily = MaliFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column(horizontalAlignment = Alignment.End) {
+                    if (isCreditCard && walletItem.currentBalancePaise < 0) {
+                        Text(
+                            text = "Outstanding",
+                            fontFamily = MaliFamily,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Text(
+                        text = CurrencyFormatter.formatPaise(walletItem.currentBalancePaise),
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -110,6 +122,16 @@ fun WalletDetailsBottomSheet(
 
             // Details rows
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                DetailRow(
+                    label = "Wallet Type",
+                    value = typeDisplayName
+                )
+                if (isCreditCard && walletItem.currentBalancePaise < 0) {
+                    DetailRow(
+                        label = "Outstanding Due",
+                        value = CurrencyFormatter.formatPaise(-walletItem.currentBalancePaise)
+                    )
+                }
                 DetailRow(
                     label = "Initial Balance",
                     value = CurrencyFormatter.formatPaise(wallet.initialBalancePaise)
@@ -141,10 +163,7 @@ fun WalletDetailsBottomSheet(
             ) {
                 MonochromeOutlinedButton(
                     text = "Edit",
-                    onClick = {
-                        onDismiss()
-                        onEditWallet()
-                    },
+                    onClick = onEditWallet,
                     modifier = Modifier.weight(1f)
                 )
 

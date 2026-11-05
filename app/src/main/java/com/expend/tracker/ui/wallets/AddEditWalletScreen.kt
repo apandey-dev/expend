@@ -20,6 +20,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -62,22 +63,26 @@ fun AddEditWalletScreen(
 
     var originalName by remember { mutableStateOf("") }
     var originalBalance by remember { mutableStateOf("") }
+    var originalType by remember { mutableStateOf(WalletType.CASH) }
 
     var isSubmitting by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
+    var showWalletTypeSheet by remember { mutableStateOf(false) }
+
+    val walletTypeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     val hasUnsavedChanges = if (isEditing) {
-        name != originalName || initialBalanceInput != originalBalance
+        name != originalName || initialBalanceInput != originalBalance || selectedType != originalType
     } else {
-        name.isNotBlank() || initialBalanceInput.isNotBlank() || description.isNotBlank()
+        name.isNotBlank() || initialBalanceInput.isNotBlank() || description.isNotBlank() || selectedType != WalletType.CASH
     }
 
     BackHandler {
-        if (hasUnsavedChanges && !isSubmitting) {
-            showDiscardConfirm = true
-        } else {
-            onNavigateBack()
+        when {
+            showWalletTypeSheet -> showWalletTypeSheet = false
+            hasUnsavedChanges && !isSubmitting -> showDiscardConfirm = true
+            else -> onNavigateBack()
         }
     }
 
@@ -87,6 +92,7 @@ fun AddEditWalletScreen(
             if (wallet != null) {
                 name = wallet.name
                 selectedType = WalletType.fromString(wallet.walletType)
+                originalType = selectedType
                 initialBalanceInput = CurrencyFormatter.paiseToEditableString(wallet.initialBalancePaise)
                 description = wallet.description
                 originalName = wallet.name
@@ -154,7 +160,7 @@ fun AddEditWalletScreen(
             }
         )
 
-        // ─── WALLET TYPE SELECTOR ────────────────────────────────────────────
+        // ─── WALLET TYPE FIELD (Opens ModalBottomSheet per Specification) ───
         Column {
             Text(
                 text = "Wallet Type",
@@ -163,53 +169,38 @@ fun AddEditWalletScreen(
                 fontSize = 13.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                WalletType.entries.forEach { type ->
-                    val isSelected = selectedType == type
-                    val shape = RoundedCornerShape(10.dp)
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(shape)
-                            .background(
-                                if (isSelected) MaterialTheme.colorScheme.surfaceVariant
-                                else MaterialTheme.colorScheme.surface
-                            )
-                            .border(
-                                width = if (isSelected) 1.dp else 0.5.dp,
-                                color = if (isSelected) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                                shape = shape
-                            )
-                            .clickable { selectedType = type }
-                            .padding(horizontal = 14.dp, vertical = 12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = type.displayName,
-                                fontFamily = MaliFamily,
-                                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                                fontSize = 13.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            if (isSelected) {
-                                Text(
-                                    text = "Selected",
-                                    fontFamily = MaliFamily,
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
+            Spacer(modifier = Modifier.height(4.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.surface)
+                    .border(
+                        width = 1.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .clickable { showWalletTypeSheet = true }
+                    .padding(horizontal = 14.dp, vertical = 14.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = selectedType.displayName,
+                        fontFamily = MaliFamily,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Choose",
+                        fontFamily = MaliFamily,
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
         }
@@ -324,6 +315,16 @@ fun AddEditWalletScreen(
         }
 
         Spacer(modifier = Modifier.height(20.dp))
+    }
+
+    // ─── WALLET TYPE SELECTION BOTTOM SHEET ─────────────────────────────
+    if (showWalletTypeSheet) {
+        WalletTypeSelectionBottomSheet(
+            sheetState = walletTypeSheetState,
+            selectedType = selectedType,
+            onSelectType = { selectedType = it },
+            onDismiss = { showWalletTypeSheet = false }
+        )
     }
 
     // ─── DISCARD CHANGES CONFIRMATION (Bottom Sheet for Non-Destructive Confirmation) ──

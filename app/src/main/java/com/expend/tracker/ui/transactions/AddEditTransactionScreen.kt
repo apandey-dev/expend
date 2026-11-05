@@ -72,7 +72,7 @@ fun AddEditTransactionScreen(
     onNavigateBack: () -> Unit,
     onNavigateToCreateWallet: () -> Unit = {},
     onNavigateToCreateCategory: (TransactionType) -> Unit = {},
-    onNavigateToCreateTemplate: () -> Unit = {},
+    onNavigateToCreateTemplate: (TransactionType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val walletsWithBalances by viewModel.walletsWithBalances.collectAsState()
@@ -256,7 +256,7 @@ fun AddEditTransactionScreen(
                 color = MaterialTheme.colorScheme.onBackground
             )
 
-            if (!isEditing) {
+            if (!isEditing && transactionType != TransactionType.TRANSFER) {
                 TextButton(onClick = { showTemplateSheet = true }) {
                     Text(
                         text = "Templates",
@@ -266,7 +266,7 @@ fun AddEditTransactionScreen(
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-            } else {
+            } else if (isEditing) {
                 TextButton(onClick = { showDeleteConfirm = true }) {
                     Text(
                         text = "Delete",
@@ -778,16 +778,18 @@ fun AddEditTransactionScreen(
         Spacer(modifier = Modifier.height(20.dp))
     }
 
-    // ─── USE TEMPLATE BOTTOM SHEET ───────────────────────────────────────────
-    if (showTemplateSheet) {
+    // ─── USE TEMPLATE BOTTOM SHEET (Filtered by Transaction Type) ───────────
+    if (showTemplateSheet && transactionType != TransactionType.TRANSFER) {
+        val matchingTemplates = savedTemplates.filter { it.type == transactionType.name }
+
         TemplateSelectionBottomSheet(
             sheetState = templateSheetState,
-            templates = savedTemplates,
+            templates = matchingTemplates,
+            transactionType = transactionType,
             onSelectTemplate = { selectedTpl ->
-                transactionType = TransactionType.fromString(selectedTpl.type)
                 title = selectedTpl.title
                 category = selectedTpl.category
-                if (selectedTpl.defaultAmountPaise != null) {
+                if (selectedTpl.defaultAmountPaise != null && selectedTpl.defaultAmountPaise > 0L) {
                     amountInput = CurrencyFormatter.paiseToEditableString(selectedTpl.defaultAmountPaise)
                 }
                 if (selectedTpl.defaultWalletId != null && activeWallets.any { it.id == selectedTpl.defaultWalletId }) {
@@ -797,7 +799,7 @@ fun AddEditTransactionScreen(
             },
             onNavigateToCreateTemplate = {
                 showTemplateSheet = false
-                onNavigateToCreateTemplate()
+                onNavigateToCreateTemplate(transactionType)
             },
             onDismiss = { showTemplateSheet = false }
         )

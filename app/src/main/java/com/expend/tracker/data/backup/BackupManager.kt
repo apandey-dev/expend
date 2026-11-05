@@ -46,7 +46,7 @@ class BackupManager(
                     put("id", w.id)
                     put("name", w.name)
                     put("initialBalancePaise", w.initialBalancePaise)
-                    put("walletType", w.walletType)
+                    put("walletType", com.expend.tracker.data.models.WalletType.fromString(w.walletType).name)
                     put("description", w.description)
                     put("isArchived", w.isArchived)
                     put("createdAt", w.createdAt)
@@ -178,7 +178,8 @@ class BackupManager(
                     return@withContext Result.failure(IllegalArgumentException("Wallet record at index $i has an empty name"))
                 }
                 val initialBalance = obj.optLong("initialBalancePaise", 0L)
-                val walletType = obj.optString("walletType", "CASH")
+                val rawWalletType = obj.optString("walletType", "OTHER")
+                val walletType = com.expend.tracker.data.models.WalletType.fromString(rawWalletType).name
                 val description = obj.optString("description", "")
                 val isArchived = obj.optBoolean("isArchived", false)
                 val createdAt = obj.optLong("createdAt", System.currentTimeMillis())

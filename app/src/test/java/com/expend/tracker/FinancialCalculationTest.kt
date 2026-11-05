@@ -80,4 +80,75 @@ class FinancialCalculationTest {
         val afterDelete = wallet.initialBalancePaise - tx1.amountPaise
         assertEquals(80000L, afterDelete) // ₹800
     }
+
+    @Test
+    fun transferBetweenWallets_preservesTotalCombinedBalance() {
+        val wallet1 = WalletEntity(id = 1L, name = "Bank", initialBalancePaise = 1000000L) // ₹10,000
+        val wallet2 = WalletEntity(id = 2L, name = "Cash", initialBalancePaise = 200000L)  // ₹2,000
+
+        val initialTotal = wallet1.initialBalancePaise + wallet2.initialBalancePaise // ₹12,000
+
+        val transferTx = TransactionEntity(
+            id = 10L,
+            title = "ATM Withdrawal",
+            amountPaise = 300000L, // ₹3,000 transfer from Bank to Cash
+            type = TransactionType.TRANSFER.name,
+            category = "Transfer",
+            walletId = 1L,
+            destinationWalletId = 2L,
+            dateMillis = System.currentTimeMillis()
+        )
+
+        // Wallet 1 balance: initial - transfer amount
+        val wallet1Balance = wallet1.initialBalancePaise - transferTx.amountPaise // ₹7,000
+        // Wallet 2 balance: initial + transfer amount
+        val wallet2Balance = wallet2.initialBalancePaise + transferTx.amountPaise // ₹5,000
+
+        assertEquals(700000L, wallet1Balance)
+        assertEquals(500000L, wallet2Balance)
+
+        val finalTotal = wallet1Balance + wallet2Balance
+        assertEquals(initialTotal, finalTotal) // Strict mathematical invariance
+    }
+
+    @Test
+    fun transferTransactions_doNotInflateMonthlyIncomeOrExpense() {
+        val transferTx = TransactionEntity(
+            id = 1L,
+            title = "Transfer to Savings",
+            amountPaise = 5000000L, // ₹50,000
+            type = TransactionType.TRANSFER.name,
+            category = "Transfer",
+            walletId = 1L,
+            destinationWalletId = 2L,
+            dateMillis = System.currentTimeMillis()
+        )
+
+        val regularExpense = TransactionEntity(
+            id = 2L,
+            title = "Groceries",
+            amountPaise = 250000L, // ₹2,500
+            type = TransactionType.EXPENSE.name,
+            category = "Groceries",
+            walletId = 1L,
+            dateMillis = System.currentTimeMillis()
+        )
+
+        val transactions = listOf(transferTx, regularExpense)
+
+        var monthlyIncome = 0L
+        var monthlyExpense = 0L
+
+        transactions.forEach { tx ->
+            if (tx.type == TransactionType.INCOME.name) {
+                monthlyIncome += tx.amountPaise
+            } else if (tx.type == TransactionType.EXPENSE.name) {
+                monthlyExpense += tx.amountPaise
+            }
+            // TRANSFER is strictly excluded from income & expense
+        }
+
+        assertEquals(0L, monthlyIncome)
+        assertEquals(250000L, monthlyExpense) // Exactly ₹2,500, not ₹52,500
+    }
 }

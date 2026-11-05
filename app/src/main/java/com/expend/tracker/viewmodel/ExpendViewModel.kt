@@ -103,6 +103,17 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
             initialValue = emptyList()
         )
 
+    // Reactive State for Nested Full-Screen Creation Auto-Selection
+    val newlyCreatedWalletId = MutableStateFlow<Long?>(null)
+    fun clearNewlyCreatedWalletId() {
+        newlyCreatedWalletId.value = null
+    }
+
+    val newlyCreatedCategoryName = MutableStateFlow<String?>(null)
+    fun clearNewlyCreatedCategoryName() {
+        newlyCreatedCategoryName.value = null
+    }
+
     val activeExpenseCategories: StateFlow<List<CategoryEntity>> = repository.activeExpenseCategoriesFlow
         .stateIn(
             scope = viewModelScope,
@@ -218,7 +229,7 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
         initialBalancePaise: Long,
         walletType: String,
         description: String = "",
-        onComplete: (() -> Unit)? = null
+        onComplete: ((Long) -> Unit)? = null
     ) {
         viewModelScope.launch {
             val entity = WalletEntity(
@@ -228,8 +239,9 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
                 walletType = walletType,
                 description = description.trim()
             )
-            repository.saveWallet(entity)
-            onComplete?.invoke()
+            val savedId = repository.saveWallet(entity)
+            newlyCreatedWalletId.value = savedId
+            onComplete?.invoke(savedId)
         }
     }
 
@@ -318,13 +330,15 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
         type: String,
         iconId: String = "ic_cat_general",
         id: Long = 0L,
-        onComplete: (() -> Unit)? = null,
+        onComplete: ((String) -> Unit)? = null,
         onError: ((String) -> Unit)? = null
     ) {
         viewModelScope.launch {
             try {
                 repository.saveCategory(name, type, iconId, id)
-                onComplete?.invoke()
+                val trimmedName = name.trim()
+                newlyCreatedCategoryName.value = trimmedName
+                onComplete?.invoke(trimmedName)
             } catch (e: Exception) {
                 onError?.invoke(e.message ?: "Failed to save category")
             }

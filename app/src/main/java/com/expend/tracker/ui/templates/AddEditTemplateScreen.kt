@@ -30,6 +30,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,25 +59,31 @@ fun AddEditTemplateScreen(
     viewModel: ExpendViewModel,
     templateId: Long? = null,
     onNavigateBack: () -> Unit,
+    onNavigateToCreateWallet: () -> Unit = {},
+    onNavigateToCreateCategory: (TransactionType) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val activeWallets by viewModel.activeWallets.collectAsState()
     val walletsWithBalances by viewModel.walletsWithBalances.collectAsState()
     val activeExpenseCategories by viewModel.activeExpenseCategories.collectAsState()
     val activeIncomeCategories by viewModel.activeIncomeCategories.collectAsState()
+    val createdWalletId by viewModel.newlyCreatedWalletId.collectAsState()
+    val createdCategoryName by viewModel.newlyCreatedCategoryName.collectAsState()
 
-    var name by remember { mutableStateOf("") }
-    var templateType by remember { mutableStateOf(TransactionType.EXPENSE) }
-    var defaultAmountInput by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Food & Dining") }
-    var defaultWalletId by remember { mutableStateOf<Long?>(null) }
-    var note by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf("") }
+    var templateType by rememberSaveable { mutableStateOf(TransactionType.EXPENSE) }
+    var defaultAmountInput by rememberSaveable { mutableStateOf("") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("Food & Dining") }
+    var defaultWalletId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var note by rememberSaveable { mutableStateOf("") }
 
     var isSubmitting by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
+    var pendingWalletTarget by rememberSaveable { mutableStateOf(false) }
+    var isInitialized by rememberSaveable { mutableStateOf(false) }
 
     // Bottom Sheets
     var showWalletSheet by remember { mutableStateOf(false) }
@@ -87,6 +94,25 @@ fun AddEditTemplateScreen(
 
     val isEditing = templateId != null && templateId > 0L
     val hasUnsavedChanges = name.isNotBlank() || title.isNotBlank()
+
+    // Auto-select newly created wallet from full-screen Create Wallet flow
+    LaunchedEffect(createdWalletId) {
+        createdWalletId?.let { newId ->
+            if (pendingWalletTarget) {
+                defaultWalletId = newId
+                pendingWalletTarget = false
+            }
+            viewModel.clearNewlyCreatedWalletId()
+        }
+    }
+
+    // Auto-select newly created category from full-screen Create Category flow
+    LaunchedEffect(createdCategoryName) {
+        createdCategoryName?.let { newName ->
+            category = newName
+            viewModel.clearNewlyCreatedCategoryName()
+        }
+    }
 
     BackHandler {
         when {
@@ -100,18 +126,21 @@ fun AddEditTemplateScreen(
     }
 
     LaunchedEffect(templateId) {
-        if (isEditing) {
-            val tpl = viewModel.getTemplate(templateId!!)
-            if (tpl != null) {
-                name = tpl.name
-                templateType = TransactionType.fromString(tpl.type)
-                if (tpl.defaultAmountPaise != null) {
-                    defaultAmountInput = CurrencyFormatter.paiseToEditableString(tpl.defaultAmountPaise)
+        if (!isInitialized) {
+            isInitialized = true
+            if (isEditing) {
+                val tpl = viewModel.getTemplate(templateId!!)
+                if (tpl != null) {
+                    name = tpl.name
+                    templateType = TransactionType.fromString(tpl.type)
+                    if (tpl.defaultAmountPaise != null) {
+                        defaultAmountInput = CurrencyFormatter.paiseToEditableString(tpl.defaultAmountPaise)
+                    }
+                    title = tpl.title
+                    category = tpl.category
+                    defaultWalletId = tpl.defaultWalletId
+                    note = tpl.note
                 }
-                title = tpl.title
-                category = tpl.category
-                defaultWalletId = tpl.defaultWalletId
-                note = tpl.note
             }
         }
     }
@@ -452,12 +481,10 @@ fun AddEditTemplateScreen(
             onSelectWallet = { wallet ->
                 defaultWalletId = wallet.id
             },
-            onCreateWallet = { wName, initialBalancePaise, type ->
-                viewModel.saveWallet(
-                    name = wName,
-                    initialBalancePaise = initialBalancePaise,
-                    walletType = type
-                )
+            onNavigateToCreateWallet = {
+                showWalletSheet = false
+                pendingWalletTarget = true
+                onNavigateToCreateWallet()
             },
             onDismiss = { showWalletSheet = false }
         )
@@ -479,8 +506,9 @@ fun AddEditTemplateScreen(
             onSelectCategory = { cat ->
                 category = cat.name
             },
-            onCreateCategory = { catName, type ->
-                viewModel.saveCategory(name = catName, type = type.name)
+            onNavigateToCreateCategory = {
+                showCategorySheet = false
+                onNavigateToCreateCategory(templateType)
             },
             onDismiss = { showCategorySheet = false }
         )

@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,6 +70,8 @@ fun AddEditTransactionScreen(
     templateId: Long? = null,
     initialType: TransactionType = TransactionType.EXPENSE,
     onNavigateBack: () -> Unit,
+    onNavigateToCreateWallet: () -> Unit = {},
+    onNavigateToCreateCategory: (TransactionType) -> Unit = {},
     onNavigateToCreateTemplate: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
@@ -78,20 +81,24 @@ fun AddEditTransactionScreen(
     val activeIncomeCategories by viewModel.activeIncomeCategories.collectAsState()
     val savedTemplates by viewModel.templates.collectAsState()
     val userPaymentModes by viewModel.userPaymentModes.collectAsState()
+    val createdWalletId by viewModel.newlyCreatedWalletId.collectAsState()
+    val createdCategoryName by viewModel.newlyCreatedCategoryName.collectAsState()
 
-    var transactionType by remember { mutableStateOf(initialType) }
-    var amountInput by remember { mutableStateOf("") }
-    var title by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Food & Dining") }
-    // Payment mode initially empty per requirement
-    var paymentMode by remember { mutableStateOf("") }
-    var selectedWalletId by remember { mutableLongStateOf(0L) }
-    var destinationWalletId by remember { mutableStateOf<Long?>(null) }
-    var dateMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    var note by remember { mutableStateOf("") }
+    // Form state preserved across navigation with rememberSaveable
+    var transactionType by rememberSaveable { mutableStateOf(initialType) }
+    var amountInput by rememberSaveable { mutableStateOf("") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var category by rememberSaveable { mutableStateOf("Food & Dining") }
+    var paymentMode by rememberSaveable { mutableStateOf("") }
+    var selectedWalletId by rememberSaveable { mutableLongStateOf(0L) }
+    var destinationWalletId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var dateMillis by rememberSaveable { mutableLongStateOf(System.currentTimeMillis()) }
+    var note by rememberSaveable { mutableStateOf("") }
 
-    var originalTitle by remember { mutableStateOf("") }
-    var originalAmount by remember { mutableStateOf("") }
+    var originalTitle by rememberSaveable { mutableStateOf("") }
+    var originalAmount by rememberSaveable { mutableStateOf("") }
+    var pendingWalletTarget by rememberSaveable { mutableStateOf<String?>(null) } // "source" or "destination"
+    var isInitialized by rememberSaveable { mutableStateOf(false) }
 
     var isSubmitting by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -117,6 +124,27 @@ fun AddEditTransactionScreen(
 
     val isEditing = transactionId != null && transactionId > 0L
     val hasUnsavedChanges = amountInput.isNotBlank() || title.isNotBlank() || note.isNotBlank()
+
+    // Auto-select newly created wallet from full-screen Create Wallet flow
+    LaunchedEffect(createdWalletId) {
+        createdWalletId?.let { newId ->
+            if (pendingWalletTarget == "destination") {
+                destinationWalletId = newId
+            } else if (pendingWalletTarget == "source" || selectedWalletId == 0L) {
+                selectedWalletId = newId
+            }
+            pendingWalletTarget = null
+            viewModel.clearNewlyCreatedWalletId()
+        }
+    }
+
+    // Auto-select newly created category from full-screen Create Category flow
+    LaunchedEffect(createdCategoryName) {
+        createdCategoryName?.let { newName ->
+            category = newName
+            viewModel.clearNewlyCreatedCategoryName()
+        }
+    }
 
     // Native Back Handling
     BackHandler {
@@ -154,37 +182,40 @@ fun AddEditTransactionScreen(
         }
     }
 
-    // Load existing transaction or template
+    // Load existing transaction or template (only once)
     LaunchedEffect(transactionId, templateId) {
-        if (transactionId != null && transactionId > 0L) {
-            val tx = viewModel.getTransaction(transactionId)
-            if (tx != null) {
-                transactionType = TransactionType.fromString(tx.type)
-                amountInput = CurrencyFormatter.paiseToEditableString(tx.amountPaise)
-                title = tx.title
-                category = tx.category
-                paymentMode = tx.paymentMode
-                selectedWalletId = tx.walletId
-                destinationWalletId = tx.destinationWalletId
-                dateMillis = tx.dateMillis
-                note = tx.note
+        if (!isInitialized) {
+            isInitialized = true
+            if (transactionId != null && transactionId > 0L) {
+                val tx = viewModel.getTransaction(transactionId)
+                if (tx != null) {
+                    transactionType = TransactionType.fromString(tx.type)
+                    amountInput = CurrencyFormatter.paiseToEditableString(tx.amountPaise)
+                    title = tx.title
+                    category = tx.category
+                    paymentMode = tx.paymentMode
+                    selectedWalletId = tx.walletId
+                    destinationWalletId = tx.destinationWalletId
+                    dateMillis = tx.dateMillis
+                    note = tx.note
 
-                originalTitle = tx.title
-                originalAmount = CurrencyFormatter.paiseToEditableString(tx.amountPaise)
-            }
-        } else if (templateId != null && templateId > 0L) {
-            val tpl = viewModel.getTemplate(templateId)
-            if (tpl != null) {
-                transactionType = TransactionType.fromString(tpl.type)
-                title = tpl.title
-                category = tpl.category
-                if (tpl.defaultWalletId != null && activeWallets.any { it.id == tpl.defaultWalletId }) {
-                    selectedWalletId = tpl.defaultWalletId
+                    originalTitle = tx.title
+                    originalAmount = CurrencyFormatter.paiseToEditableString(tx.amountPaise)
                 }
-                if (tpl.defaultAmountPaise != null) {
-                    amountInput = CurrencyFormatter.paiseToEditableString(tpl.defaultAmountPaise)
+            } else if (templateId != null && templateId > 0L) {
+                val tpl = viewModel.getTemplate(templateId)
+                if (tpl != null) {
+                    transactionType = TransactionType.fromString(tpl.type)
+                    title = tpl.title
+                    category = tpl.category
+                    if (tpl.defaultWalletId != null && activeWallets.any { it.id == tpl.defaultWalletId }) {
+                        selectedWalletId = tpl.defaultWalletId
+                    }
+                    if (tpl.defaultAmountPaise != null) {
+                        amountInput = CurrencyFormatter.paiseToEditableString(tpl.defaultAmountPaise)
+                    }
+                    note = tpl.note
                 }
-                note = tpl.note
             }
         }
     }
@@ -812,12 +843,10 @@ fun AddEditTransactionScreen(
                     destinationWalletId = activeWallets.firstOrNull { it.id != wallet.id }?.id
                 }
             },
-            onCreateWallet = { name, initialBalancePaise, type ->
-                viewModel.saveWallet(
-                    name = name,
-                    initialBalancePaise = initialBalancePaise,
-                    walletType = type
-                )
+            onNavigateToCreateWallet = {
+                showSourceWalletSheet = false
+                pendingWalletTarget = "source"
+                onNavigateToCreateWallet()
             },
             onDismiss = { showSourceWalletSheet = false }
         )
@@ -833,12 +862,10 @@ fun AddEditTransactionScreen(
             onSelectWallet = { wallet ->
                 destinationWalletId = wallet.id
             },
-            onCreateWallet = { name, initialBalancePaise, type ->
-                viewModel.saveWallet(
-                    name = name,
-                    initialBalancePaise = initialBalancePaise,
-                    walletType = type
-                )
+            onNavigateToCreateWallet = {
+                showDestWalletSheet = false
+                pendingWalletTarget = "destination"
+                onNavigateToCreateWallet()
             },
             onDismiss = { showDestWalletSheet = false }
         )
@@ -872,8 +899,9 @@ fun AddEditTransactionScreen(
             onSelectCategory = { cat ->
                 category = cat.name
             },
-            onCreateCategory = { catName, type ->
-                viewModel.saveCategory(name = catName, type = type.name)
+            onNavigateToCreateCategory = {
+                showCategorySheet = false
+                onNavigateToCreateCategory(transactionType)
             },
             onDismiss = { showCategorySheet = false }
         )

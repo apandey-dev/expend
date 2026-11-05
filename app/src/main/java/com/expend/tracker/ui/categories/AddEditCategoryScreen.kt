@@ -55,6 +55,7 @@ fun AddEditCategoryScreen(
     categoryId: Long? = null,
     initialType: TransactionType = TransactionType.EXPENSE,
     onNavigateBack: () -> Unit,
+    onCategorySaved: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isEditing = categoryId != null && categoryId > 0L
@@ -293,7 +294,8 @@ fun AddEditCategoryScreen(
                             name = trimmed,
                             type = selectedType.name,
                             iconId = selectedIconId,
-                            onComplete = {
+                            onComplete = { savedName ->
+                                onCategorySaved?.invoke(savedName)
                                 onNavigateBack()
                             },
                             onError = { err ->
@@ -322,7 +324,8 @@ fun AddEditCategoryScreen(
                         name = trimmed,
                         type = selectedType.name,
                         iconId = selectedIconId,
-                        onComplete = {
+                        onComplete = { savedName ->
+                            onCategorySaved?.invoke(savedName)
                             onNavigateBack()
                         },
                         onError = { err ->

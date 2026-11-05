@@ -154,6 +154,11 @@ fun WalletsScreen(
                 selectedWalletForDetails = null
                 onNavigateToTransactionsForWallet(walletId)
             },
+            onEditWallet = {
+                val walletId = selectedWalletForDetails!!.wallet.id
+                selectedWalletForDetails = null
+                onNavigateToEditWallet(walletId)
+            },
             onDismiss = { selectedWalletForDetails = null }
         )
     }

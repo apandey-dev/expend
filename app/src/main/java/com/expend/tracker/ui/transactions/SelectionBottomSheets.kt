@@ -65,15 +65,9 @@ fun WalletSelectionBottomSheet(
     title: String = "Select Wallet",
     excludeWalletId: Long? = null,
     onSelectWallet: (WalletEntity) -> Unit,
-    onCreateWallet: (name: String, initialBalancePaise: Long, type: String) -> Unit,
+    onNavigateToCreateWallet: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var showCreateForm by remember { mutableStateOf(false) }
-    var newWalletName by remember { mutableStateOf("") }
-    var newWalletBalance by remember { mutableStateOf("") }
-    var newWalletType by remember { mutableStateOf(WalletType.CASH) }
-    var formError by remember { mutableStateOf<String?>(null) }
-
     val activeWallets = walletsWithBalances
         .filter { !it.wallet.isArchived && (excludeWalletId == null || it.wallet.id != excludeWalletId) }
 
@@ -115,12 +109,12 @@ fun WalletSelectionBottomSheet(
 
                 TextButton(
                     onClick = {
-                        showCreateForm = !showCreateForm
-                        formError = null
+                        onDismiss()
+                        onNavigateToCreateWallet()
                     }
                 ) {
                     Text(
-                        text = if (showCreateForm) "Cancel" else "Create Wallet",
+                        text = "Create Wallet",
                         fontFamily = MaliFamily,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface
@@ -128,100 +122,22 @@ fun WalletSelectionBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Inline Create Wallet Form
-            if (showCreateForm) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .border(
-                            width = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(14.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = "New Wallet",
-                            fontFamily = MaliFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-
-                        OutlinedTextField(
-                            value = newWalletName,
-                            onValueChange = {
-                                newWalletName = it
-                                formError = null
-                            },
-                            label = { Text("Wallet Name", fontFamily = MaliFamily, fontSize = 12.sp) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            )
-                        )
-
-                        OutlinedTextField(
-                            value = newWalletBalance,
-                            onValueChange = {
-                                if (it.all { ch -> ch.isDigit() || ch == '.' }) {
-                                    newWalletBalance = it
-                                    formError = null
-                                }
-                            },
-                            label = { Text("Initial Balance (₹)", fontFamily = MaliFamily, fontSize = 12.sp) },
-                            placeholder = { Text("0.00", fontFamily = MaliFamily) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            )
-                        )
-
-                        if (formError != null) {
-                            Text(
-                                text = formError!!,
-                                fontFamily = MaliFamily,
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
-                        MonochromePrimaryButton(
-                            text = "Save Wallet",
-                            onClick = {
-                                if (newWalletName.trim().isEmpty()) {
-                                    formError = "Please enter wallet name"
-                                    return@MonochromePrimaryButton
-                                }
-                                val balancePaise = CurrencyFormatter.parseAmountToPaise(newWalletBalance) ?: 0L
-                                onCreateWallet(newWalletName.trim(), balancePaise, newWalletType.name)
-                                showCreateForm = false
-                                newWalletName = ""
-                                newWalletBalance = ""
-                            }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Wallets List
             if (activeWallets.isEmpty()) {
                 MinimalEmptyState(
                     message = "No available wallets found.",
                     actionText = "Create Wallet",
-                    onActionClick = { showCreateForm = true }
+                    onActionClick = {
+                        onDismiss()
+                        onNavigateToCreateWallet()
+                    }
                 )
             } else {
                 LazyColumn(
@@ -314,13 +230,9 @@ fun CategorySelectionBottomSheet(
     selectedCategory: String,
     transactionType: TransactionType,
     onSelectCategory: (CategoryEntity) -> Unit,
-    onCreateCategory: (name: String, type: TransactionType) -> Unit,
+    onNavigateToCreateCategory: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    var showCreateForm by remember { mutableStateOf(false) }
-    var newCategoryName by remember { mutableStateOf("") }
-    var formError by remember { mutableStateOf<String?>(null) }
-
     val activeCategories = categories.filter { !it.isArchived }
 
     ModalBottomSheet(
@@ -361,12 +273,12 @@ fun CategorySelectionBottomSheet(
 
                 TextButton(
                     onClick = {
-                        showCreateForm = !showCreateForm
-                        formError = null
+                        onDismiss()
+                        onNavigateToCreateCategory()
                     }
                 ) {
                     Text(
-                        text = if (showCreateForm) "Cancel" else "Add Category",
+                        text = "Add Category",
                         fontFamily = MaliFamily,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.onSurface
@@ -374,80 +286,22 @@ fun CategorySelectionBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Inline Add Category Form
-            if (showCreateForm) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                        .border(
-                            width = 0.5.dp,
-                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .padding(14.dp)
-                ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = "New ${transactionType.title} Category",
-                            fontFamily = MaliFamily,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-
-                        OutlinedTextField(
-                            value = newCategoryName,
-                            onValueChange = {
-                                newCategoryName = it
-                                formError = null
-                            },
-                            label = { Text("Category Name", fontFamily = MaliFamily, fontSize = 12.sp) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.6f)
-                            )
-                        )
-
-                        if (formError != null) {
-                            Text(
-                                text = formError!!,
-                                fontFamily = MaliFamily,
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
-                        MonochromePrimaryButton(
-                            text = "Create Category",
-                            onClick = {
-                                val trimmed = newCategoryName.trim()
-                                if (trimmed.isEmpty()) {
-                                    formError = "Please enter category name"
-                                    return@MonochromePrimaryButton
-                                }
-                                onCreateCategory(trimmed, transactionType)
-                                showCreateForm = false
-                                newCategoryName = ""
-                            }
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(
+                thickness = 0.5.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
 
             // Category List
             if (activeCategories.isEmpty()) {
                 MinimalEmptyState(
                     message = "No categories available for ${transactionType.title.lowercase()}.",
                     actionText = "Add Category",
-                    onActionClick = { showCreateForm = true }
+                    onActionClick = {
+                        onDismiss()
+                        onNavigateToCreateCategory()
+                    }
                 )
             } else {
                 LazyColumn(

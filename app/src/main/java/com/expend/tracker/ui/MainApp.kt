@@ -177,6 +177,8 @@ fun MainApp(
                         templateId = null,
                         initialType = initialType,
                         onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
+                        onNavigateToCreateCategory = { type -> navController.navigate(NavRoutes.addCategory(type)) },
                         onNavigateToCreateTemplate = { navController.navigate(NavRoutes.ADD_TEMPLATE) }
                     )
                 }
@@ -192,6 +194,8 @@ fun MainApp(
                         transactionId = transactionId,
                         templateId = null,
                         onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
+                        onNavigateToCreateCategory = { type -> navController.navigate(NavRoutes.addCategory(type)) },
                         onNavigateToCreateTemplate = { navController.navigate(NavRoutes.ADD_TEMPLATE) }
                     )
                 }
@@ -207,6 +211,8 @@ fun MainApp(
                         transactionId = null,
                         templateId = templateId,
                         onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
+                        onNavigateToCreateCategory = { type -> navController.navigate(NavRoutes.addCategory(type)) },
                         onNavigateToCreateTemplate = { navController.navigate(NavRoutes.ADD_TEMPLATE) }
                     )
                 }
@@ -250,7 +256,9 @@ fun MainApp(
                     AddEditTemplateScreen(
                         viewModel = viewModel,
                         templateId = null,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
+                        onNavigateToCreateCategory = { type -> navController.navigate(NavRoutes.addCategory(type)) }
                     )
                 }
 
@@ -263,7 +271,9 @@ fun MainApp(
                     AddEditTemplateScreen(
                         viewModel = viewModel,
                         templateId = templateId,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateWallet = { navController.navigate(NavRoutes.ADD_WALLET) },
+                        onNavigateToCreateCategory = { type -> navController.navigate(NavRoutes.addCategory(type)) }
                     )
                 }
 

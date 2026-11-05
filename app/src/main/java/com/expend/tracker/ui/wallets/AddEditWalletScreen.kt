@@ -37,6 +37,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import com.expend.tracker.data.models.WalletType
 import com.expend.tracker.ui.components.ConfirmationBottomSheet
 import com.expend.tracker.ui.components.ConfirmDialog
+import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.components.MonochromeTextField
 import com.expend.tracker.ui.theme.MaliFamily
@@ -49,6 +50,7 @@ fun AddEditWalletScreen(
     viewModel: ExpendViewModel,
     walletId: Long? = null,
     onNavigateBack: () -> Unit,
+    onWalletSaved: ((Long) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val isEditing = walletId != null && walletId > 0L
@@ -235,37 +237,91 @@ fun AddEditWalletScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ─── SAVE BUTTON (Text-only) ─────────────────────────────────────────
-        MonochromePrimaryButton(
-            text = if (isEditing) "Save Changes" else "Save Wallet",
-            enabled = !isSubmitting,
-            onClick = {
-                val trimmedName = name.trim()
-                val parsedPaise = if (initialBalanceInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(initialBalanceInput)
+        // ─── ACTION BUTTONS (Equal-Width 50%/50% Cancel and Save when editing) ─
+        if (isEditing) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MonochromeOutlinedButton(
+                    text = "Cancel",
+                    onClick = {
+                        if (hasUnsavedChanges) {
+                            showDiscardConfirm = true
+                        } else {
+                            onNavigateBack()
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
 
-                when {
-                    trimmedName.isEmpty() -> {
-                        errorMessage = "Please enter a wallet name."
-                    }
-                    parsedPaise == null -> {
-                        errorMessage = "Please enter a valid initial balance."
-                    }
-                    else -> {
-                        isSubmitting = true
-                        viewModel.saveWallet(
-                            id = if (isEditing) walletId!! else 0L,
-                            name = trimmedName,
-                            initialBalancePaise = parsedPaise,
-                            walletType = selectedType.name,
-                            description = description.trim(),
-                            onComplete = {
-                                onNavigateBack()
+                MonochromePrimaryButton(
+                    text = "Save",
+                    enabled = !isSubmitting,
+                    onClick = {
+                        val trimmedName = name.trim()
+                        val parsedPaise = if (initialBalanceInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(initialBalanceInput)
+
+                        when {
+                            trimmedName.isEmpty() -> {
+                                errorMessage = "Please enter a wallet name."
                             }
-                        )
+                            parsedPaise == null -> {
+                                errorMessage = "Please enter a valid initial balance."
+                            }
+                            else -> {
+                                isSubmitting = true
+                                viewModel.saveWallet(
+                                    id = walletId!!,
+                                    name = trimmedName,
+                                    initialBalancePaise = parsedPaise,
+                                    walletType = selectedType.name,
+                                    description = description.trim(),
+                                    onComplete = { savedId ->
+                                        onWalletSaved?.invoke(savedId)
+                                        onNavigateBack()
+                                    }
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        } else {
+            MonochromePrimaryButton(
+                text = "Save Wallet",
+                enabled = !isSubmitting,
+                onClick = {
+                    val trimmedName = name.trim()
+                    val parsedPaise = if (initialBalanceInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(initialBalanceInput)
+
+                    when {
+                        trimmedName.isEmpty() -> {
+                            errorMessage = "Please enter a wallet name."
+                        }
+                        parsedPaise == null -> {
+                            errorMessage = "Please enter a valid initial balance."
+                        }
+                        else -> {
+                            isSubmitting = true
+                            viewModel.saveWallet(
+                                id = 0L,
+                                name = trimmedName,
+                                initialBalancePaise = parsedPaise,
+                                walletType = selectedType.name,
+                                description = description.trim(),
+                                onComplete = { savedId ->
+                                    onWalletSaved?.invoke(savedId)
+                                    onNavigateBack()
+                                }
+                            )
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
     }

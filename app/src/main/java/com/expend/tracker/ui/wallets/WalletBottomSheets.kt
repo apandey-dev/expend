@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.expend.tracker.data.models.WalletType
 import com.expend.tracker.data.models.WalletWithBalance
+import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.theme.MaliFamily
 import com.expend.tracker.util.CurrencyFormatter
@@ -40,6 +41,7 @@ fun WalletDetailsBottomSheet(
     sheetState: SheetState,
     walletItem: WalletWithBalance,
     onViewTransactions: () -> Unit,
+    onEditWallet: () -> Unit,
     onDismiss: () -> Unit
 ) {
     val wallet = walletItem.wallet
@@ -131,11 +133,27 @@ fun WalletDetailsBottomSheet(
 
             Spacer(modifier = Modifier.height(22.dp))
 
-            // Actions: View Transactions
-            MonochromePrimaryButton(
-                text = "View Transactions",
-                onClick = onViewTransactions
-            )
+            // Actions: Edit and View Transactions (Equal 50/50 width)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MonochromeOutlinedButton(
+                    text = "Edit",
+                    onClick = {
+                        onDismiss()
+                        onEditWallet()
+                    },
+                    modifier = Modifier.weight(1f)
+                )
+
+                MonochromePrimaryButton(
+                    text = "Transactions",
+                    onClick = onViewTransactions,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
         }

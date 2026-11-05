@@ -263,7 +263,7 @@ class ExpendRepository(private val database: ExpendDatabase) {
         return categoryDao.getCategoryById(id)
     }
 
-    suspend fun saveCategory(name: String, type: String, id: Long = 0L): Long {
+    suspend fun saveCategory(name: String, type: String, iconId: String = "ic_cat_general", id: Long = 0L): Long {
         val trimmed = name.trim()
         val existing = categoryDao.getCategoryByNameAndType(trimmed, type)
         if (existing != null && existing.id != id) {
@@ -271,11 +271,18 @@ class ExpendRepository(private val database: ExpendDatabase) {
         }
 
         return if (id == 0L) {
-            categoryDao.insertCategory(CategoryEntity(name = trimmed, type = type))
+            categoryDao.insertCategory(CategoryEntity(name = trimmed, type = type, iconId = iconId))
         } else {
             val current = categoryDao.getCategoryById(id)
             val oldName = current?.name
-            val updated = CategoryEntity(id = id, name = trimmed, type = type)
+            val updated = CategoryEntity(
+                id = id,
+                name = trimmed,
+                type = type,
+                iconId = iconId,
+                isArchived = current?.isArchived ?: false,
+                createdAt = current?.createdAt ?: System.currentTimeMillis()
+            )
             database.withTransaction {
                 categoryDao.updateCategory(updated)
                 if (oldName != null && oldName != trimmed) {

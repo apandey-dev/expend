@@ -316,13 +316,14 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
     fun saveCategory(
         name: String,
         type: String,
+        iconId: String = "ic_cat_general",
         id: Long = 0L,
         onComplete: (() -> Unit)? = null,
         onError: ((String) -> Unit)? = null
     ) {
         viewModelScope.launch {
             try {
-                repository.saveCategory(name, type, id)
+                repository.saveCategory(name, type, iconId, id)
                 onComplete?.invoke()
             } catch (e: Exception) {
                 onError?.invoke(e.message ?: "Failed to save category")

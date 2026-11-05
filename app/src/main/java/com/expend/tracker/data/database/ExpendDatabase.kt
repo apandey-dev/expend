@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
         TemplateEntity::class,
         CategoryEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class ExpendDatabase : RoomDatabase() {
@@ -67,25 +67,31 @@ abstract class ExpendDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE categories ADD COLUMN iconId TEXT NOT NULL DEFAULT 'ic_cat_general'")
+            }
+        }
+
         private val defaultExpenseCategories = listOf(
-            "Food & Dining",
-            "Groceries",
-            "Transportation",
-            "Shopping",
-            "Bills & Utilities",
-            "Entertainment",
-            "Health & Care",
-            "Education",
-            "General Expense"
+            Pair("Food & Dining", "ic_cat_food"),
+            Pair("Groceries", "ic_cat_groceries"),
+            Pair("Transportation", "ic_cat_transport"),
+            Pair("Shopping", "ic_cat_shopping"),
+            Pair("Bills & Utilities", "ic_cat_bills"),
+            Pair("Entertainment", "ic_cat_entertainment"),
+            Pair("Health & Care", "ic_cat_health"),
+            Pair("Education", "ic_cat_education"),
+            Pair("General Expense", "ic_cat_general")
         )
 
         private val defaultIncomeCategories = listOf(
-            "Salary",
-            "Freelance",
-            "Business",
-            "Interest",
-            "Gift",
-            "Other Income"
+            Pair("Salary", "ic_cat_salary"),
+            Pair("Freelance", "ic_cat_freelance"),
+            Pair("Business", "ic_cat_business"),
+            Pair("Interest", "ic_cat_interest"),
+            Pair("Gift", "ic_cat_gift"),
+            Pair("Other Income", "ic_cat_general")
         )
 
         fun getInstance(context: Context): ExpendDatabase {
@@ -95,7 +101,7 @@ abstract class ExpendDatabase : RoomDatabase() {
                     ExpendDatabase::class.java,
                     "expend_tracker.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)
@@ -121,11 +127,11 @@ abstract class ExpendDatabase : RoomDatabase() {
 
                 if (database.categoryDao().getCategoryCount() == 0) {
                     val initialList = mutableListOf<CategoryEntity>()
-                    defaultExpenseCategories.forEach { cat ->
-                        initialList.add(CategoryEntity(name = cat, type = "EXPENSE"))
+                    defaultExpenseCategories.forEach { (catName, iconId) ->
+                        initialList.add(CategoryEntity(name = catName, type = "EXPENSE", iconId = iconId))
                     }
-                    defaultIncomeCategories.forEach { cat ->
-                        initialList.add(CategoryEntity(name = cat, type = "INCOME"))
+                    defaultIncomeCategories.forEach { (catName, iconId) ->
+                        initialList.add(CategoryEntity(name = catName, type = "INCOME", iconId = iconId))
                     }
                     database.categoryDao().insertAll(initialList)
                 }

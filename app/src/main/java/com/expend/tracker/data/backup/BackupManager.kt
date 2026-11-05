@@ -22,7 +22,7 @@ class BackupManager(
     private val database: ExpendDatabase
 ) {
     companion object {
-        const val CURRENT_BACKUP_VERSION = 3
+        const val CURRENT_BACKUP_VERSION = 4
         const val APP_ID = "com.expend.tracker"
         const val CURRENCY = "INR"
     }
@@ -63,6 +63,7 @@ class BackupManager(
                     put("id", c.id)
                     put("name", c.name)
                     put("type", c.type)
+                    put("iconId", c.iconId)
                     put("isArchived", c.isArchived)
                     put("createdAt", c.createdAt)
                 }
@@ -211,6 +212,7 @@ class BackupManager(
                     val id = obj.getLong("id")
                     val name = obj.getString("name").trim()
                     val type = obj.getString("type")
+                    val iconId = obj.optString("iconId", "ic_cat_general")
                     val isArchived = obj.optBoolean("isArchived", false)
                     val createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                     categories.add(
@@ -218,6 +220,7 @@ class BackupManager(
                             id = id,
                             name = name,
                             type = type,
+                            iconId = iconId,
                             isArchived = isArchived,
                             createdAt = createdAt
                         )

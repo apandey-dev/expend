@@ -15,6 +15,7 @@ data class CategoryEntity(
     val id: Long = 0,
     val name: String,
     val type: String, // "EXPENSE" or "INCOME"
+    val iconId: String = "ic_cat_general",
     val isArchived: Boolean = false,
     val createdAt: Long = System.currentTimeMillis()
 )

@@ -375,8 +375,10 @@ fun RecentTransactionRow(
                 Spacer(modifier = Modifier.height(2.dp))
                 val subText = if (type == TransactionType.TRANSFER) {
                     "Transfer"
-                } else {
+                } else if (tx.paymentMode.isNotBlank()) {
                     "${tx.category} · ${tx.paymentMode}"
+                } else {
+                    tx.category
                 }
                 Text(
                     text = subText,

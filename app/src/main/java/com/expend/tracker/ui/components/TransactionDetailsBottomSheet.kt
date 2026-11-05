@@ -34,6 +34,8 @@ import androidx.compose.ui.unit.sp
 import com.expend.tracker.R
 import com.expend.tracker.data.models.TransactionItem
 import com.expend.tracker.data.models.TransactionType
+import com.expend.tracker.ui.components.MonochromeOutlinedButton
+import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.theme.MaliFamily
 import com.expend.tracker.util.CurrencyFormatter
 import com.expend.tracker.util.DateUtils
@@ -136,7 +138,9 @@ fun TransactionDetailsBottomSheet(
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 if (!isTransfer) {
                     DetailRow(label = "Category", value = tx.category)
-                    DetailRow(label = "Payment Mode", value = tx.paymentMode)
+                    if (tx.paymentMode.isNotBlank()) {
+                        DetailRow(label = "Payment Mode", value = tx.paymentMode)
+                    }
                 }
                 DetailRow(
                     label = if (isTransfer) "Wallets" else "Wallet",
@@ -159,26 +163,22 @@ fun TransactionDetailsBottomSheet(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Action Buttons
+            // Action Buttons: Equal 50/50 Width, Short Labels
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDelete) {
-                    Text(
-                        text = "Delete",
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Spacer(modifier = Modifier.width(10.dp))
+                MonochromeOutlinedButton(
+                    text = "Delete",
+                    onClick = onDelete,
+                    modifier = Modifier.weight(1f)
+                )
+
                 MonochromePrimaryButton(
-                    text = "Edit Transaction",
+                    text = "Edit",
                     onClick = onEdit,
-                    modifier = Modifier.width(160.dp)
+                    modifier = Modifier.weight(1f)
                 )
             }
 

@@ -272,7 +272,7 @@ private fun WalletGridCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(118.dp)
+            .height(132.dp)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surface)
             .border(
@@ -284,7 +284,7 @@ private fun WalletGridCard(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
-            .padding(14.dp)
+            .padding(16.dp)
     ) {
         Column(
             modifier = Modifier.fillMaxSize(),

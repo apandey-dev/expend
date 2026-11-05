@@ -26,6 +26,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SheetState
@@ -43,14 +44,19 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.layout.size
 import com.expend.tracker.data.entities.CategoryEntity
+import com.expend.tracker.data.models.CategoryIconRegistry
 import com.expend.tracker.data.models.TransactionType
 import com.expend.tracker.ui.components.ConfirmationBottomSheet
 import com.expend.tracker.ui.components.ConfirmDialog
+import com.expend.tracker.ui.components.IconPickerBottomSheet
 import com.expend.tracker.ui.components.MinimalEmptyState
+import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.components.MonochromeSegmentedControl
 import com.expend.tracker.ui.components.MonochromeTextField
@@ -208,10 +214,11 @@ fun CategoriesScreen(
             sheetState = editSheetState,
             category = existing,
             initialType = if (existing != null) TransactionType.fromString(existing.type) else selectedTab,
-            onSave = { name, type ->
+            onSave = { name, type, iconId ->
                 viewModel.saveCategory(
                     name = name,
                     type = type.name,
+                    iconId = iconId,
                     id = existing?.id ?: 0L,
                     onComplete = {
                         categoryForEditSheet = null
@@ -345,13 +352,25 @@ private fun CleanCategoryTile(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = category.name,
-                fontFamily = MaliFamily,
-                fontWeight = FontWeight.Medium,
-                fontSize = 15.sp,
-                color = MaterialTheme.colorScheme.onSurface
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f, fill = false)
+            ) {
+                Icon(
+                    painter = painterResource(id = CategoryIconRegistry.getIconResource(category.iconId)),
+                    contentDescription = category.name,
+                    tint = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.size(20.dp)
+                )
+                Text(
+                    text = category.name,
+                    fontFamily = MaliFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
 
             if (category.isArchived) {
                 Box(
@@ -478,7 +497,7 @@ private fun CategoryEditBottomSheet(
     sheetState: SheetState,
     category: CategoryEntity?,
     initialType: TransactionType,
-    onSave: (name: String, type: TransactionType) -> Unit,
+    onSave: (name: String, type: TransactionType, iconId: String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val isEditing = category != null
@@ -486,6 +505,11 @@ private fun CategoryEditBottomSheet(
     var selectedType by remember(category, initialType) {
         mutableStateOf(if (category != null) TransactionType.fromString(category.type) else initialType)
     }
+    var selectedIconId by remember(category) {
+        mutableStateOf(category?.iconId ?: CategoryIconRegistry.DEFAULT_ICON_ID)
+    }
+    var isIconManuallySelected by remember { mutableStateOf(category != null) }
+    var showIconPicker by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
 
     ModalBottomSheet(
@@ -535,10 +559,79 @@ private fun CategoryEditBottomSheet(
                 onValueChange = {
                     name = it
                     validationError = null
+                    if (!isIconManuallySelected && it.isNotBlank()) {
+                        selectedIconId = CategoryIconRegistry.defaultIconForName(it)
+                    }
                 },
                 label = "Category Name",
                 placeholder = "e.g., Groceries, Rent, Salary"
             )
+
+            // Category Icon Selection Row
+            Column {
+                Text(
+                    text = "Category Icon",
+                    fontFamily = MaliFamily,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .border(
+                            width = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .clickable { showIconPicker = true }
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(34.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                                .background(MaterialTheme.colorScheme.surface)
+                                .border(
+                                    0.5.dp,
+                                    MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                    RoundedCornerShape(6.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = CategoryIconRegistry.getIconResource(selectedIconId)),
+                                contentDescription = "Selected icon",
+                                tint = MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        Text(
+                            text = CategoryIconRegistry.allIcons.firstOrNull { it.id == selectedIconId }?.label ?: "General",
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    Text(
+                        text = "Change",
+                        fontFamily = MaliFamily,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
             if (validationError != null) {
                 Text(
@@ -549,42 +642,48 @@ private fun CategoryEditBottomSheet(
                 )
             }
 
-            // Actions: Cancel and Save
+            // Equal-Width Actions: Cancel and Save (50% / 50% split)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp),
-                horizontalArrangement = Arrangement.End,
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = onDismiss) {
-                    Text(
-                        text = "Cancel",
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(10.dp))
+                MonochromeOutlinedButton(
+                    text = "Cancel",
+                    onClick = onDismiss,
+                    modifier = Modifier.weight(1f)
+                )
 
                 MonochromePrimaryButton(
-                    text = if (isEditing) "Save Changes" else "Create Category",
+                    text = "Save",
                     onClick = {
                         val trimmed = name.trim()
                         if (trimmed.isBlank()) {
                             validationError = "Category name cannot be empty."
                         } else {
-                            onSave(trimmed, selectedType)
+                            onSave(trimmed, selectedType, selectedIconId)
                         }
                     },
-                    modifier = Modifier.width(160.dp)
+                    modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    if (showIconPicker) {
+        IconPickerBottomSheet(
+            selectedIconId = selectedIconId,
+            onIconSelected = { iconId ->
+                selectedIconId = iconId
+                isIconManuallySelected = true
+                showIconPicker = false
+            },
+            onDismiss = { showIconPicker = false }
+        )
     }
 }
 

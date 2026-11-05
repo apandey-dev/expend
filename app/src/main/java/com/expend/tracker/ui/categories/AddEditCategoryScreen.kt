@@ -2,7 +2,10 @@ package com.expend.tracker.ui.categories
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +13,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,17 +28,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.expend.tracker.data.models.CategoryIconRegistry
 import com.expend.tracker.data.models.TransactionType
 import com.expend.tracker.ui.components.ConfirmDialog
+import com.expend.tracker.ui.components.IconPickerBottomSheet
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.components.MonochromeSegmentedControl
 import com.expend.tracker.ui.components.MonochromeTextField
 import com.expend.tracker.ui.theme.MaliFamily
 import com.expend.tracker.viewmodel.ExpendViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddEditCategoryScreen(
     viewModel: ExpendViewModel,
@@ -44,17 +56,24 @@ fun AddEditCategoryScreen(
 
     var name by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(initialType) }
+    var selectedIconId by remember { mutableStateOf(CategoryIconRegistry.DEFAULT_ICON_ID) }
+    var isIconManuallySelected by remember { mutableStateOf(false) }
+    var showIconPicker by remember { mutableStateOf(false) }
+
     var originalName by remember { mutableStateOf("") }
     var originalType by remember { mutableStateOf(initialType) }
+    var originalIconId by remember { mutableStateOf(CategoryIconRegistry.DEFAULT_ICON_ID) }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
 
-    val hasUnsavedChanges = name.trim() != originalName.trim() || selectedType != originalType
+    val hasUnsavedChanges = name.trim() != originalName.trim() || selectedType != originalType || selectedIconId != originalIconId
 
     BackHandler {
-        if (hasUnsavedChanges && !isSubmitting) {
+        if (showIconPicker) {
+            showIconPicker = false
+        } else if (hasUnsavedChanges && !isSubmitting) {
             showDiscardConfirm = true
         } else {
             onNavigateBack()
@@ -68,8 +87,11 @@ fun AddEditCategoryScreen(
                 name = cat.name
                 val type = TransactionType.fromString(cat.type)
                 selectedType = type
+                selectedIconId = cat.iconId
+                isIconManuallySelected = true
                 originalName = cat.name
                 originalType = type
+                originalIconId = cat.iconId
             }
         }
     }
@@ -115,10 +137,79 @@ fun AddEditCategoryScreen(
             onValueChange = {
                 name = it
                 errorMessage = null
+                if (!isIconManuallySelected && it.isNotBlank()) {
+                    selectedIconId = CategoryIconRegistry.defaultIconForName(it)
+                }
             },
             label = "Category Name",
             placeholder = "e.g., Subscriptions, Books, Investment"
         )
+
+        // ─── CATEGORY ICON PICKER ROW ────────────────────────────────────────
+        Column {
+            Text(
+                text = "Category Icon",
+                fontFamily = MaliFamily,
+                fontSize = 11.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .border(
+                        width = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .clickable { showIconPicker = true }
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(MaterialTheme.colorScheme.surface)
+                            .border(
+                                0.5.dp,
+                                MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                                RoundedCornerShape(6.dp)
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = CategoryIconRegistry.getIconResource(selectedIconId)),
+                            contentDescription = "Selected icon",
+                            tint = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    Text(
+                        text = CategoryIconRegistry.allIcons.firstOrNull { it.id == selectedIconId }?.label ?: "General",
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                Text(
+                    text = "Change",
+                    fontFamily = MaliFamily,
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
 
         // ─── ERROR MESSAGE ───────────────────────────────────────────────────
         if (!errorMessage.isNullOrEmpty()) {
@@ -133,9 +224,9 @@ fun AddEditCategoryScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ─── SAVE BUTTON (Text-only) ─────────────────────────────────────────
+        // ─── SAVE BUTTON (Text-only, Short Label 'Save') ──────────────────────
         MonochromePrimaryButton(
-            text = if (isEditing) "Save Changes" else "Save Category",
+            text = "Save",
             enabled = !isSubmitting,
             onClick = {
                 val trimmed = name.trim()
@@ -149,6 +240,7 @@ fun AddEditCategoryScreen(
                     id = if (isEditing) categoryId!! else 0L,
                     name = trimmed,
                     type = selectedType.name,
+                    iconId = selectedIconId,
                     onComplete = {
                         onNavigateBack()
                     },
@@ -158,6 +250,18 @@ fun AddEditCategoryScreen(
                     }
                 )
             }
+        )
+    }
+
+    if (showIconPicker) {
+        IconPickerBottomSheet(
+            selectedIconId = selectedIconId,
+            onIconSelected = { iconId ->
+                selectedIconId = iconId
+                isIconManuallySelected = true
+                showIconPicker = false
+            },
+            onDismiss = { showIconPicker = false }
         )
     }
 

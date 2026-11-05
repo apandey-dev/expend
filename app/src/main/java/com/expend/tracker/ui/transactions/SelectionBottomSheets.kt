@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.expend.tracker.R
 import com.expend.tracker.data.entities.CategoryEntity
 import com.expend.tracker.data.entities.WalletEntity
+import com.expend.tracker.data.models.CategoryIconRegistry
 import com.expend.tracker.data.models.TransactionType
 import com.expend.tracker.data.models.WalletType
 import com.expend.tracker.data.models.WalletWithBalance
@@ -489,8 +490,8 @@ fun CategorySelectionBottomSheet(
                                     modifier = Modifier.weight(1f)
                                 ) {
                                     Icon(
-                                        painter = painterResource(id = R.drawable.ic_nav_categories),
-                                        contentDescription = null,
+                                        painter = painterResource(id = CategoryIconRegistry.getIconResource(cat.iconId)),
+                                        contentDescription = cat.name,
                                         tint = if (isSelected) MaterialTheme.colorScheme.onSurface
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(18.dp)

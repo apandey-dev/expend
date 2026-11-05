@@ -69,6 +69,7 @@ fun AddEditTransactionScreen(
     templateId: Long? = null,
     initialType: TransactionType = TransactionType.EXPENSE,
     onNavigateBack: () -> Unit,
+    onNavigateToCreateTemplate: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val walletsWithBalances by viewModel.walletsWithBalances.collectAsState()
@@ -227,7 +228,7 @@ fun AddEditTransactionScreen(
             if (!isEditing) {
                 TextButton(onClick = { showTemplateSheet = true }) {
                     Text(
-                        text = "Use Template",
+                        text = "Templates",
                         fontFamily = MaliFamily,
                         fontWeight = FontWeight.Medium,
                         fontSize = 13.sp,
@@ -384,9 +385,9 @@ fun AddEditTransactionScreen(
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Text(
-                            text = "▼",
+                            text = "Choose",
                             fontFamily = MaliFamily,
-                            fontSize = 11.sp,
+                            fontSize = 12.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
@@ -639,7 +640,7 @@ fun AddEditTransactionScreen(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // ─── ACTION BUTTONS (Equal-Width 50%/50% when editing, or Save) ──────
+        // ─── ACTION BUTTONS (Equal-Width 50%/50% Cancel and Save when editing) ─
         if (isEditing) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -647,8 +648,14 @@ fun AddEditTransactionScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 MonochromeOutlinedButton(
-                    text = "Delete",
-                    onClick = { showDeleteConfirm = true },
+                    text = "Cancel",
+                    onClick = {
+                        if (hasUnsavedChanges) {
+                            showDiscardConfirm = true
+                        } else {
+                            onNavigateBack()
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -758,7 +765,8 @@ fun AddEditTransactionScreen(
                 note = selectedTpl.note
             },
             onNavigateToCreateTemplate = {
-                // Navigate to create template if needed
+                showTemplateSheet = false
+                onNavigateToCreateTemplate()
             },
             onDismiss = { showTemplateSheet = false }
         )

@@ -1,7 +1,9 @@
 package com.expend.tracker.ui.templates
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,9 +17,10 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,12 +37,12 @@ import com.expend.tracker.data.entities.TemplateEntity
 import com.expend.tracker.data.models.TransactionType
 import com.expend.tracker.ui.components.ConfirmDialog
 import com.expend.tracker.ui.components.MinimalEmptyState
-import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.theme.MaliFamily
 import com.expend.tracker.util.CurrencyFormatter
 import com.expend.tracker.viewmodel.ExpendViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TemplatesScreen(
     viewModel: ExpendViewModel,
@@ -49,7 +52,20 @@ fun TemplatesScreen(
     modifier: Modifier = Modifier
 ) {
     val templates by viewModel.templates.collectAsState()
+    val activeWallets by viewModel.activeWallets.collectAsState()
+
+    var selectedTemplateForDetails by remember { mutableStateOf<TemplateEntity?>(null) }
     var templateToDelete by remember { mutableStateOf<TemplateEntity?>(null) }
+
+    val detailsSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+
+    val isBackHandledLocally = selectedTemplateForDetails != null || templateToDelete != null
+    BackHandler(enabled = isBackHandledLocally) {
+        when {
+            selectedTemplateForDetails != null -> selectedTemplateForDetails = null
+            templateToDelete != null -> templateToDelete = null
+        }
+    }
 
     Column(
         modifier = modifier
@@ -108,9 +124,7 @@ fun TemplatesScreen(
                 items(templates, key = { it.id }) { template ->
                     TemplateItemCard(
                         template = template,
-                        onUse = { onUseTemplate(template.id) },
-                        onEdit = { onNavigateToEditTemplate(template.id) },
-                        onDelete = { templateToDelete = template }
+                        onClick = { selectedTemplateForDetails = template }
                     )
                 }
                 item {
@@ -118,6 +132,33 @@ fun TemplatesScreen(
                 }
             }
         }
+    }
+
+    // ─── TEMPLATE DETAILS BOTTOM SHEET ───────────────────────────────────────
+    if (selectedTemplateForDetails != null) {
+        val currentTpl = selectedTemplateForDetails!!
+        val walletName = activeWallets.firstOrNull { it.id == currentTpl.defaultWalletId }?.name
+        TemplateDetailsBottomSheet(
+            sheetState = detailsSheetState,
+            template = currentTpl,
+            walletName = walletName,
+            onUse = {
+                val id = currentTpl.id
+                selectedTemplateForDetails = null
+                onUseTemplate(id)
+            },
+            onEdit = {
+                val id = currentTpl.id
+                selectedTemplateForDetails = null
+                onNavigateToEditTemplate(id)
+            },
+            onDelete = {
+                val tpl = currentTpl
+                selectedTemplateForDetails = null
+                templateToDelete = tpl
+            },
+            onDismiss = { selectedTemplateForDetails = null }
+        )
     }
 
     // Delete Confirmation Dialog (Destructive Always AlertDialog)
@@ -136,17 +177,17 @@ fun TemplatesScreen(
 }
 
 /**
- * Slightly larger Template Card with 3 consistent text-only actions:
- * [ Use Template ]  [ Edit ]  [ Delete ]
+ * Clean, moderately sized Template Card:
+ * Displays only template information (no action buttons on tile).
+ * Tapping anywhere opens the Template Details ModalBottomSheet.
  */
 @Composable
 private fun TemplateItemCard(
     template: TemplateEntity,
-    onUse: () -> Unit,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit
+    onClick: () -> Unit
 ) {
     val isIncome = template.type == TransactionType.INCOME.name
+    val typeLabel = if (isIncome) "Income" else "Expense"
 
     Box(
         modifier = Modifier
@@ -154,19 +195,23 @@ private fun TemplateItemCard(
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
             .border(
-                width = 0.5.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.45f),
                 shape = RoundedCornerShape(12.dp)
             )
+            .clickable(onClick = onClick)
             .padding(16.dp)
     ) {
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
                     Text(
                         text = template.name,
                         fontFamily = MaliFamily,
@@ -174,61 +219,36 @@ private fun TemplateItemCard(
                         fontSize = 16.sp,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(3.dp))
                     Text(
-                        text = "${template.title} • ${template.category}",
+                        text = typeLabel,
                         fontFamily = MaliFamily,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
-
-                if (template.defaultAmountPaise != null) {
-                    val amountFormatted = CurrencyFormatter.formatPaise(template.defaultAmountPaise)
-                    val prefix = if (isIncome) "+ " else "- "
-                    Text(
-                        text = prefix + amountFormatted,
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 15.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "${template.title} • ${template.category}",
+                    fontFamily = MaliFamily,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // ─── THREE TEXT ACTIONS IN ONE ROW: [Use Template] [Edit] [Delete] ───
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // 1. Primary: Use Template
-                MonochromePrimaryButton(
-                    text = "Use Template",
-                    onClick = onUse,
-                    modifier = Modifier
-                        .weight(1.3f)
-                        .height(38.dp)
-                )
-
-                // 2. Edit (Container)
-                MonochromeOutlinedButton(
-                    text = "Edit",
-                    onClick = onEdit,
-                    modifier = Modifier
-                        .weight(0.85f)
-                        .height(38.dp)
-                )
-
-                // 3. Delete (Container)
-                MonochromeOutlinedButton(
-                    text = "Delete",
-                    onClick = onDelete,
-                    modifier = Modifier
-                        .weight(0.85f)
-                        .height(38.dp)
+            if (template.defaultAmountPaise != null) {
+                val amountFormatted = CurrencyFormatter.formatPaise(template.defaultAmountPaise)
+                val prefix = if (isIncome) "+ " else "- "
+                Text(
+                    text = prefix + amountFormatted,
+                    fontFamily = MaliFamily,
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 15.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

@@ -20,11 +20,13 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,15 +35,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.expend.tracker.data.entities.CategoryEntity
 import com.expend.tracker.data.models.CategoryIconRegistry
 import com.expend.tracker.data.models.TransactionType
 import com.expend.tracker.ui.components.ConfirmDialog
 import com.expend.tracker.ui.components.IconPickerBottomSheet
+import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.components.MonochromeSegmentedControl
 import com.expend.tracker.ui.components.MonochromeTextField
 import com.expend.tracker.ui.theme.MaliFamily
 import com.expend.tracker.viewmodel.ExpendViewModel
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,6 +58,7 @@ fun AddEditCategoryScreen(
     modifier: Modifier = Modifier
 ) {
     val isEditing = categoryId != null && categoryId > 0L
+    val scope = rememberCoroutineScope()
 
     var name by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(initialType) }
@@ -63,20 +69,22 @@ fun AddEditCategoryScreen(
     var originalName by remember { mutableStateOf("") }
     var originalType by remember { mutableStateOf(initialType) }
     var originalIconId by remember { mutableStateOf(CategoryIconRegistry.DEFAULT_ICON_ID) }
+    var loadedCategory by remember { mutableStateOf<CategoryEntity?>(null) }
 
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     var showDiscardConfirm by remember { mutableStateOf(false) }
     var isSubmitting by remember { mutableStateOf(false) }
 
     val hasUnsavedChanges = name.trim() != originalName.trim() || selectedType != originalType || selectedIconId != originalIconId
 
     BackHandler {
-        if (showIconPicker) {
-            showIconPicker = false
-        } else if (hasUnsavedChanges && !isSubmitting) {
-            showDiscardConfirm = true
-        } else {
-            onNavigateBack()
+        when {
+            showIconPicker -> showIconPicker = false
+            showDeleteConfirm -> showDeleteConfirm = false
+            showDiscardConfirm -> showDiscardConfirm = false
+            hasUnsavedChanges && !isSubmitting -> showDiscardConfirm = true
+            else -> onNavigateBack()
         }
     }
 
@@ -84,6 +92,7 @@ fun AddEditCategoryScreen(
         if (isEditing) {
             val cat = viewModel.getCategory(categoryId!!)
             if (cat != null) {
+                loadedCategory = cat
                 name = cat.name
                 val type = TransactionType.fromString(cat.type)
                 selectedType = type
@@ -104,11 +113,12 @@ fun AddEditCategoryScreen(
             .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // ─── CLEAN HEADER (No Back Icon) ─────────────────────────────────────
+        // ─── HEADER (With Top-Right Delete when editing) ─────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 10.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -118,6 +128,30 @@ fun AddEditCategoryScreen(
                 fontSize = 20.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )
+
+            if (isEditing) {
+                TextButton(onClick = {
+                    val cat = loadedCategory
+                    if (cat != null) {
+                        scope.launch {
+                            val count = viewModel.getTransactionCountForCategory(cat.name)
+                            if (count > 0) {
+                                errorMessage = "Cannot delete category '${cat.name}' because it is in use by $count transaction(s)."
+                            } else {
+                                showDeleteConfirm = true
+                            }
+                        }
+                    }
+                }) {
+                    Text(
+                        text = "Delete",
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -224,33 +258,81 @@ fun AddEditCategoryScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ─── SAVE BUTTON (Text-only, Short Label 'Save') ──────────────────────
-        MonochromePrimaryButton(
-            text = "Save",
-            enabled = !isSubmitting,
-            onClick = {
-                val trimmed = name.trim()
-                if (trimmed.isEmpty()) {
-                    errorMessage = "Please enter a category name."
-                    return@MonochromePrimaryButton
-                }
-
-                isSubmitting = true
-                viewModel.saveCategory(
-                    id = if (isEditing) categoryId!! else 0L,
-                    name = trimmed,
-                    type = selectedType.name,
-                    iconId = selectedIconId,
-                    onComplete = {
-                        onNavigateBack()
+        // ─── ACTION BUTTONS (Equal-Width 50%/50% Cancel and Save when editing) ─
+        if (isEditing) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                MonochromeOutlinedButton(
+                    text = "Cancel",
+                    onClick = {
+                        if (hasUnsavedChanges) {
+                            showDiscardConfirm = true
+                        } else {
+                            onNavigateBack()
+                        }
                     },
-                    onError = { err ->
-                        isSubmitting = false
-                        errorMessage = err
-                    }
+                    modifier = Modifier.weight(1f)
+                )
+
+                MonochromePrimaryButton(
+                    text = "Save",
+                    enabled = !isSubmitting,
+                    onClick = {
+                        val trimmed = name.trim()
+                        if (trimmed.isEmpty()) {
+                            errorMessage = "Please enter a category name."
+                            return@MonochromePrimaryButton
+                        }
+
+                        isSubmitting = true
+                        viewModel.saveCategory(
+                            id = categoryId!!,
+                            name = trimmed,
+                            type = selectedType.name,
+                            iconId = selectedIconId,
+                            onComplete = {
+                                onNavigateBack()
+                            },
+                            onError = { err ->
+                                isSubmitting = false
+                                errorMessage = err
+                            }
+                        )
+                    },
+                    modifier = Modifier.weight(1f)
                 )
             }
-        )
+        } else {
+            MonochromePrimaryButton(
+                text = "Save",
+                enabled = !isSubmitting,
+                onClick = {
+                    val trimmed = name.trim()
+                    if (trimmed.isEmpty()) {
+                        errorMessage = "Please enter a category name."
+                        return@MonochromePrimaryButton
+                    }
+
+                    isSubmitting = true
+                    viewModel.saveCategory(
+                        id = 0L,
+                        name = trimmed,
+                        type = selectedType.name,
+                        iconId = selectedIconId,
+                        onComplete = {
+                            onNavigateBack()
+                        },
+                        onError = { err ->
+                            isSubmitting = false
+                            errorMessage = err
+                        }
+                    )
+                }
+            )
+        }
     }
 
     if (showIconPicker) {
@@ -262,6 +344,24 @@ fun AddEditCategoryScreen(
                 showIconPicker = false
             },
             onDismiss = { showIconPicker = false }
+        )
+    }
+
+    // ─── DELETE CATEGORY CONFIRMATION ────────────────────────────────────────
+    if (showDeleteConfirm && loadedCategory != null) {
+        ConfirmDialog(
+            title = "Delete Category?",
+            message = "Are you sure you want to permanently delete '${loadedCategory!!.name}'?",
+            confirmButtonText = "Delete",
+            onConfirm = {
+                showDeleteConfirm = false
+                viewModel.deleteCategorySafely(
+                    category = loadedCategory!!,
+                    onSuccess = { onNavigateBack() },
+                    onError = { errorMessage = it }
+                )
+            },
+            onDismiss = { showDeleteConfirm = false }
         )
     }
 

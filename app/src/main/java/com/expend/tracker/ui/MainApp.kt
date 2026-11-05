@@ -102,7 +102,9 @@ fun MainApp(
                             navController.navigate(NavRoutes.editTransaction(id))
                         },
                         onNavigateToAllTransactions = {
-                            navController.navigate(NavRoutes.VIEW_ALL_TRANSACTIONS)
+                            navController.navigate(NavRoutes.TRANSACTIONS) {
+                                launchSingleTop = true
+                            }
                         },
                         onNavigateToSettings = {
                             navController.navigate(NavRoutes.SETTINGS)
@@ -112,22 +114,6 @@ fun MainApp(
 
                 // 2. TRANSACTIONS SCREEN
                 composable(NavRoutes.TRANSACTIONS) {
-                    TransactionsScreen(
-                        viewModel = viewModel,
-                        onNavigateToAddTransaction = {
-                            navController.navigate(NavRoutes.addTransaction(TransactionType.EXPENSE))
-                        },
-                        onNavigateToTransfer = {
-                            navController.navigate(NavRoutes.addTransaction(TransactionType.TRANSFER))
-                        },
-                        onNavigateToEditTransaction = { id ->
-                            navController.navigate(NavRoutes.editTransaction(id))
-                        }
-                    )
-                }
-
-                // 2b. CONTEXTUAL VIEW ALL TRANSACTIONS (From Home, hides bottom bar, system back returns to Home)
-                composable(NavRoutes.VIEW_ALL_TRANSACTIONS) {
                     TransactionsScreen(
                         viewModel = viewModel,
                         onNavigateToAddTransaction = {
@@ -190,7 +176,8 @@ fun MainApp(
                         transactionId = null,
                         templateId = null,
                         initialType = initialType,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateTemplate = { navController.navigate(NavRoutes.ADD_TEMPLATE) }
                     )
                 }
 
@@ -204,7 +191,8 @@ fun MainApp(
                         viewModel = viewModel,
                         transactionId = transactionId,
                         templateId = null,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateTemplate = { navController.navigate(NavRoutes.ADD_TEMPLATE) }
                     )
                 }
 
@@ -218,7 +206,8 @@ fun MainApp(
                         viewModel = viewModel,
                         transactionId = null,
                         templateId = templateId,
-                        onNavigateBack = { navController.popBackStack() }
+                        onNavigateBack = { navController.popBackStack() },
+                        onNavigateToCreateTemplate = { navController.navigate(NavRoutes.ADD_TEMPLATE) }
                     )
                 }
 

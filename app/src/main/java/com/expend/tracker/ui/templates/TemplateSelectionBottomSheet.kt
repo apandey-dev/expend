@@ -87,7 +87,7 @@ fun TemplateSelectionBottomSheet(
                     onNavigateToCreateTemplate()
                 }) {
                     Text(
-                        text = "New Template",
+                        text = "Add New Template",
                         fontFamily = MaliFamily,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

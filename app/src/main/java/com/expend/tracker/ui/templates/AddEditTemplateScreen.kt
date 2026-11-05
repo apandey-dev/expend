@@ -43,6 +43,7 @@ import com.expend.tracker.ui.components.ConfirmationBottomSheet
 import com.expend.tracker.ui.components.ConfirmDialog
 import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
+import com.expend.tracker.ui.components.MonochromeSegmentedControl
 import com.expend.tracker.ui.components.MonochromeSegmentedTypeSelector
 import com.expend.tracker.ui.components.MonochromeTextField
 import com.expend.tracker.ui.theme.MaliFamily
@@ -161,12 +162,21 @@ fun AddEditTemplateScreen(
             }
         }
 
-        // ─── TEMPLATE TYPE SELECTOR ──────────────────────────────────────────
-        MonochromeSegmentedTypeSelector(
-            selectedType = templateType,
-            onTypeSelected = { newType ->
-                templateType = newType
-                errorMessage = null
+        // ─── TEMPLATE TYPE SELECTOR (Expense / Income) ──────────────────────
+        MonochromeSegmentedControl(
+            options = listOf("Expense", "Income"),
+            selectedIndex = if (templateType == TransactionType.EXPENSE) 0 else 1,
+            onOptionSelected = { index ->
+                val newType = if (index == 0) TransactionType.EXPENSE else TransactionType.INCOME
+                if (newType != templateType) {
+                    templateType = newType
+                    // Clear incompatible category
+                    val validCategories = if (newType == TransactionType.EXPENSE) activeExpenseCategories else activeIncomeCategories
+                    if (!validCategories.any { it.name.equals(category, ignoreCase = true) }) {
+                        category = ""
+                    }
+                    errorMessage = null
+                }
             }
         )
 
@@ -329,7 +339,7 @@ fun AddEditTemplateScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // ─── ACTION BUTTONS (Equal-Width 50%/50% when editing, or Save) ──────
+        // ─── ACTION BUTTONS (Equal-Width 50%/50% Cancel and Save when editing) ─
         if (isEditing) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -337,8 +347,14 @@ fun AddEditTemplateScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 MonochromeOutlinedButton(
-                    text = "Delete",
-                    onClick = { showDeleteConfirm = true },
+                    text = "Cancel",
+                    onClick = {
+                        if (hasUnsavedChanges) {
+                            showDiscardConfirm = true
+                        } else {
+                            onNavigateBack()
+                        }
+                    },
                     modifier = Modifier.weight(1f)
                 )
 
@@ -356,6 +372,9 @@ fun AddEditTemplateScreen(
                             }
                             title.trim().isEmpty() -> {
                                 errorMessage = "Please enter a title for the transaction."
+                            }
+                            category.trim().isEmpty() -> {
+                                errorMessage = "Please select a category."
                             }
                             defaultAmountInput.isNotEmpty() && parsedPaise == null -> {
                                 errorMessage = "Please enter a valid amount or leave it empty."
@@ -394,6 +413,9 @@ fun AddEditTemplateScreen(
                         }
                         title.trim().isEmpty() -> {
                             errorMessage = "Please enter a title for the transaction."
+                        }
+                        category.trim().isEmpty() -> {
+                            errorMessage = "Please select a category."
                         }
                         defaultAmountInput.isNotEmpty() && parsedPaise == null -> {
                             errorMessage = "Please enter a valid amount or leave it empty."

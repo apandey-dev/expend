@@ -9,10 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const caption = document.getElementById('carousel-caption');
 
   const captions = [
-    'A quiet ledger, clear and deliberate.',
-    'Credit Card accounting with live outstanding & available limits.',
+    'AMOLED Night — Total Balance banner & recent transactions.',
+    'Credit Card accounting with live outstanding debt & limit.',
     'Subtle pastel badges for clean visual category identification.',
-    'Complete, contextual transaction history without distractions.'
+    '40 built-in vector icons with instant selection sheet.',
+    'Full-screen transaction editing with date & time pickers.'
   ];
 
   let currentIndex = 0;

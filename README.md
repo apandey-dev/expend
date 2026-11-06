@@ -1,5 +1,7 @@
+<a href="https://github.com/apandey-dev/expend"><img src="docs/media/Expend%20App%20Expense%20Tracker%20Promo.png" width="100%" alt="Expend - Personal Expense Tracker"></a>
+
 <p align="center">
-  <img src="docs/media/expend-mark.svg" alt="Expend" width="96" height="96">
+  <img src="docs/media/expend-mark.svg" alt="Expend" width="84" height="84">
 </p>
 
 <h1 align="center">Expend</h1>
@@ -10,20 +12,33 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/apandey-dev/expend/releases/tag/v1.0.0"><img src="https://img.shields.io/badge/Release-v1.0.0-b45f3c?style=flat-square" alt="Expend v1.0.0"></a>
   <a href="https://kotlinlang.org/"><img src="https://img.shields.io/badge/Kotlin_·_Compose-1a1a1a?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin and Jetpack Compose"></a>
   <a href="https://developer.android.com/training/data-storage/room"><img src="https://img.shields.io/badge/Room_·_SQLite-1a1a1a?style=flat-square&logo=sqlite&logoColor=white" alt="Room SQLite"></a>
   <img src="https://img.shields.io/badge/Android_8.0+-1a1a1a?style=flat-square&logo=android&logoColor=white" alt="Android 8.0 and up">
-  <img src="https://img.shields.io/badge/Paise_·_Integer_Units-b45f3c?style=flat-square" alt="Integer Minor Units">
+  <img src="https://img.shields.io/badge/Paise_·_Integer_Units-1a1a1a?style=flat-square" alt="Integer Minor Units">
   <a href="LICENSE"><img src="https://img.shields.io/badge/MIT-1a1a1a?style=flat-square" alt="MIT License"></a>
 </p>
 
 <p align="center">
-  <a href="https://apandey-dev.github.io/expend/">See it</a> &nbsp;·&nbsp;
-  <a href="#how-it-fits-together">How it fits together</a> &nbsp;·&nbsp;
+  <a href="UI_SHOWCASE.md"><strong>🎨 View Full UI Showcase (30+ Screens)</strong></a> &nbsp;·&nbsp;
+  <a href="https://github.com/apandey-dev/expend/releases/latest">Download APK</a> &nbsp;·&nbsp;
+  <a href="#how-it-fits-together">Architecture</a> &nbsp;·&nbsp;
   <a href="#getting-started">Run it</a>
 </p>
 
 <p align="center"><sub>Monochrome by default. One accent, spent on purpose. 100% offline. Local Room database.</sub></p>
+
+---
+
+## Visual Preview
+
+| AMOLED Night Theme | Clean Day Theme |
+|:---:|:---:|
+| <a href="UI_SHOWCASE.md"><img src="docs/media/screen-dark-home.jpg" width="340" alt="AMOLED Night Home Screen"></a> | <a href="UI_SHOWCASE.md"><img src="docs/media/screen-light-home.jpg" width="340" alt="Clean Day Home Screen"></a> |
+| **AMOLED Night:** Pure black background with charcoal container | **Clean Day:** Paper white with dark contrast balance tile |
+
+👉 **[Explore the Complete UI Showcase →](UI_SHOWCASE.md)** *(includes 30+ screenshots of Wallets, Credit Cards, 40-Icon Picker, Categories, and Custom Sheets)*
 
 ---
 
@@ -81,8 +96,8 @@ That's the whole setup — no API keys, no Firebase setup, and no cloud tokens.
 | | |
 |---|---|
 | **JDK** | 17 or newer |
-| **Android** | 8.0 and up (`minSdk` 26, `compileSdk` / `targetSdk` 34) |
-| **Gradle** | 8.7, via the wrapper |
+| **Android** | 8.0 and up (`minSdk` 26, `compileSdk` / `targetSdk` 35) |
+| **Gradle** | 8.10.2, via the wrapper |
 | **Database** | Room SQLite 2.6.1 with automated schema migrations (v5) |
 | **Units** | Minor currency units (`paise: Long`), preventing rounding errors |
 
@@ -123,8 +138,14 @@ verified by unit tests:
 
 All 25 test tasks pass cleanly.
 
-**[apandey-dev.github.io/expend](https://apandey-dev.github.io/expend/)** — the app's showcase page:
-core philosophy, feature tour, and architecture.
+## Release Downloads
+
+Grab the latest verified builds directly from the GitHub Releases page:
+
+* **[Download Expend v1.0.0](https://github.com/apandey-dev/expend/releases/tag/v1.0.0)**
+  * `expend-v1.0.0-release.aab` (Google Play bundle)
+  * `expend-v1.0.0-release-unsigned.apk` (Release APK)
+  * `expend-v1.0.0-debug.apk` (Direct testable sideload APK)
 
 ## Licence
 

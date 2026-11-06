@@ -192,13 +192,29 @@ fun WalletSelectionBottomSheet(
                                 }
 
                                 Column(horizontalAlignment = Alignment.End) {
-                                    Text(
-                                        text = CurrencyFormatter.formatPaise(item.currentBalancePaise),
-                                        fontFamily = MaliFamily,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 14.sp,
-                                        color = MaterialTheme.colorScheme.onSurface
-                                    )
+                                    if (item.isCreditCard) {
+                                        Text(
+                                            text = "Due: " + CurrencyFormatter.formatPaise(item.outstandingPaise),
+                                            fontFamily = MaliFamily,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Text(
+                                            text = "Avail: " + CurrencyFormatter.formatPaise(item.availableCreditPaise),
+                                            fontFamily = MaliFamily,
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    } else {
+                                        Text(
+                                            text = CurrencyFormatter.formatPaise(item.currentBalancePaise),
+                                            fontFamily = MaliFamily,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 14.sp,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
                                     if (isSelected) {
                                         Text(
                                             text = "Selected",

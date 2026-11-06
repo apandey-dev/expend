@@ -236,6 +236,9 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
         initialBalancePaise: Long,
         walletType: String,
         description: String = "",
+        includeInIncome: Boolean = false,
+        creditLimitPaise: Long = 0L,
+        openingOutstandingPaise: Long = 0L,
         onComplete: ((Long) -> Unit)? = null
     ) {
         viewModelScope.launch {
@@ -244,7 +247,10 @@ class ExpendViewModel(application: Application) : AndroidViewModel(application) 
                 name = name.trim(),
                 initialBalancePaise = initialBalancePaise,
                 walletType = walletType,
-                description = description.trim()
+                description = description.trim(),
+                includeInIncome = includeInIncome,
+                creditLimitPaise = creditLimitPaise,
+                openingOutstandingPaise = openingOutstandingPaise
             )
             val savedId = repository.saveWallet(entity)
             newlyCreatedWalletId.value = savedId

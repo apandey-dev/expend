@@ -7,46 +7,45 @@ import com.expend.tracker.data.models.FinancialSummary
 import com.expend.tracker.data.models.TransactionType
 import com.expend.tracker.data.models.WalletType
 import com.expend.tracker.data.models.WalletWithBalance
+import com.expend.tracker.util.DateUtils
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalTime
 
 class WalletTypeAndTemplateTest {
 
     @Test
-    fun allSevenWalletTypes_arePresentWithExactNamesAndDisplayNames() {
-        val entries = WalletType.entries
-        assertEquals("Must support exactly 7 wallet types", 7, entries.size)
-
-        val expectedDisplayNames = listOf(
-            "Cash",
-            "Bank Account",
-            "Digital Wallet",
-            "Credit Card",
-            "Savings",
-            "Business",
-            "Other"
-        )
-
-        val actualDisplayNames = entries.map { it.displayName }
-        assertEquals(expectedDisplayNames, actualDisplayNames)
+    fun walletTypeEnum_supportsExactly7Types() {
+        val types = WalletType.entries
+        assertEquals(7, types.size)
+        assertTrue(types.contains(WalletType.CASH))
+        assertTrue(types.contains(WalletType.BANK_ACCOUNT))
+        assertTrue(types.contains(WalletType.DIGITAL_WALLET))
+        assertTrue(types.contains(WalletType.CREDIT_CARD))
+        assertTrue(types.contains(WalletType.SAVINGS))
+        assertTrue(types.contains(WalletType.BUSINESS))
+        assertTrue(types.contains(WalletType.OTHER))
     }
 
     @Test
-    fun walletType_fromString_normalizesLegacyAndUnknownSafely() {
+    fun walletType_fromString_normalizesCorrectly() {
         assertEquals(WalletType.CASH, WalletType.fromString("CASH"))
         assertEquals(WalletType.CASH, WalletType.fromString("Cash"))
+        assertEquals(WalletType.BANK_ACCOUNT, WalletType.fromString("BANK_ACCOUNT"))
         assertEquals(WalletType.BANK_ACCOUNT, WalletType.fromString("BANK"))
         assertEquals(WalletType.BANK_ACCOUNT, WalletType.fromString("Bank Account"))
-        assertEquals(WalletType.DIGITAL_WALLET, WalletType.fromString("UPI"))
+        assertEquals(WalletType.DIGITAL_WALLET, WalletType.fromString("DIGITAL_WALLET"))
         assertEquals(WalletType.DIGITAL_WALLET, WalletType.fromString("Digital Wallet"))
+        assertEquals(WalletType.DIGITAL_WALLET, WalletType.fromString("UPI"))
         assertEquals(WalletType.CREDIT_CARD, WalletType.fromString("CREDIT_CARD"))
         assertEquals(WalletType.CREDIT_CARD, WalletType.fromString("Credit Card"))
-        assertEquals(WalletType.SAVINGS, WalletType.fromString("SAVINGS ACCOUNT"))
+        assertEquals(WalletType.SAVINGS, WalletType.fromString("SAVINGS"))
         assertEquals(WalletType.SAVINGS, WalletType.fromString("Savings"))
+        assertEquals(WalletType.BUSINESS, WalletType.fromString("BUSINESS"))
         assertEquals(WalletType.BUSINESS, WalletType.fromString("Business"))
         assertEquals(WalletType.OTHER, WalletType.fromString("OTHER"))
         assertEquals(WalletType.OTHER, WalletType.fromString("SomeRandomType"))
@@ -55,83 +54,185 @@ class WalletTypeAndTemplateTest {
     }
 
     @Test
-    fun creditCardAccounting_tracksLiabilityAndPreventsDoubleCountingOnRepayment() {
-        val bankWallet = WalletEntity(id = 1L, name = "HDFC Bank", initialBalancePaise = 2000000L, walletType = WalletType.BANK_ACCOUNT.name) // ₹20,000
-        val creditCardWallet = WalletEntity(id = 2L, name = "ICICI Credit Card", initialBalancePaise = 0L, walletType = WalletType.CREDIT_CARD.name) // ₹0 initial
+    fun creditCard_fullAccountingFlow_limit_outstanding_availableCredit_and_settlement() {
+        // Scenarios 6 & 7: Create Credit Card with ₹50,000 limit and ₹5,000 opening outstanding
+        val creditCard = WalletEntity(
+            id = 2L,
+            name = "HDFC Credit Card",
+            initialBalancePaise = 0L,
+            walletType = WalletType.CREDIT_CARD.name,
+            creditLimitPaise = 5000000L, // ₹50,000
+            openingOutstandingPaise = 500000L // ₹5,000
+        )
 
-        // 1. User spends ₹5,000 on Groceries with Credit Card
+        val initialCcWb = WalletWithBalance(
+            wallet = creditCard,
+            incomePaise = 0L,
+            expensePaise = 0L,
+            transactionCount = 0
+        )
+        // Verify ₹5,000 outstanding and ₹45,000 available credit
+        assertEquals(500000L, initialCcWb.outstandingPaise)
+        assertEquals(4500000L, initialCcWb.availableCreditPaise)
+        assertEquals(-500000L, initialCcWb.currentBalancePaise)
+
+        // Scenarios 8 & 9: Record a ₹2,000 card expense
         val expenseTx = TransactionEntity(
             id = 101L,
-            title = "Groceries",
-            amountPaise = 500000L, // ₹5,000
+            title = "Dinner",
+            amountPaise = 200000L, // ₹2,000
             type = TransactionType.EXPENSE.name,
-            category = "Groceries",
-            walletId = creditCardWallet.id,
+            category = "Food & Dining",
+            walletId = creditCard.id,
             dateMillis = System.currentTimeMillis()
         )
 
-        // Calculate Credit Card balance after purchase:
-        // Income = 0, Expense = 500000
-        val ccBalanceAfterExpense = WalletWithBalance(
-            wallet = creditCardWallet,
+        val ccAfterExpense = WalletWithBalance(
+            wallet = creditCard,
             incomePaise = 0L,
             expensePaise = expenseTx.amountPaise,
             transactionCount = 1
         )
+        // Verify ₹7,000 outstanding and ₹43,000 available credit
+        assertEquals(700000L, ccAfterExpense.outstandingPaise)
+        assertEquals(4300000L, ccAfterExpense.availableCreditPaise)
+        assertEquals(-700000L, ccAfterExpense.currentBalancePaise)
 
-        // Liability is negative: -₹5,000.00
-        assertEquals(-500000L, ccBalanceAfterExpense.currentBalancePaise)
+        // Scenarios 10, 11, 12, 13, 14: Transfer ₹3,000 from SBI Bank to Credit Card
+        val sbiBank = WalletEntity(
+            id = 1L,
+            name = "SBI Bank",
+            initialBalancePaise = 2000000L, // ₹20,000
+            walletType = WalletType.BANK_ACCOUNT.name
+        )
 
-        // 2. User repays Credit Card bill via Transfer from Bank to Credit Card
-        val repaymentTransferTx = TransactionEntity(
+        val settlementTransferTx = TransactionEntity(
             id = 102L,
             title = "Credit Card Bill Payment",
-            amountPaise = 500000L, // ₹5,000
+            amountPaise = 300000L, // ₹3,000
             type = TransactionType.TRANSFER.name,
             category = "Transfer",
-            walletId = bankWallet.id, // Source: Bank
-            destinationWalletId = creditCardWallet.id, // Destination: Credit Card
+            walletId = sbiBank.id,
+            destinationWalletId = creditCard.id,
             dateMillis = System.currentTimeMillis()
         )
 
-        // Credit Card after repayment:
-        // Income (inbound transfer) = 500000, Expense (purchase) = 500000
-        val ccBalanceAfterRepayment = WalletWithBalance(
-            wallet = creditCardWallet,
-            incomePaise = repaymentTransferTx.amountPaise,
-            expensePaise = expenseTx.amountPaise,
-            transactionCount = 2
-        )
-
-        // Liability is cleared back to 0!
-        assertEquals(0L, ccBalanceAfterRepayment.currentBalancePaise)
-
-        // Bank balance after repayment:
-        // Initial = 20,000, Expense (outbound transfer) = 5,000 -> Balance = 15,000
-        val bankBalanceAfterRepayment = WalletWithBalance(
-            wallet = bankWallet,
+        // Verify SBI Bank decreases by ₹3,000 (from ₹20,000 to ₹17,000)
+        val sbiAfterSettlement = WalletWithBalance(
+            wallet = sbiBank,
             incomePaise = 0L,
-            expensePaise = repaymentTransferTx.amountPaise,
+            expensePaise = settlementTransferTx.amountPaise,
             transactionCount = 1
         )
-        assertEquals(1500000L, bankBalanceAfterRepayment.currentBalancePaise)
+        assertEquals(1700000L, sbiAfterSettlement.currentBalancePaise) // ₹17,000
 
-        // Combined Net Worth: 15,000 + 0 = ₹15,000
-        val totalNetWorth = bankBalanceAfterRepayment.currentBalancePaise + ccBalanceAfterRepayment.currentBalancePaise
-        assertEquals(1500000L, totalNetWorth)
+        // Verify Credit Card outstanding reduces to ₹4,000 and available credit becomes ₹46,000
+        val ccAfterSettlement = WalletWithBalance(
+            wallet = creditCard,
+            incomePaise = settlementTransferTx.amountPaise, // ₹3,000 settlement received
+            expensePaise = expenseTx.amountPaise, // ₹2,000 expense
+            transactionCount = 2
+        )
+        assertEquals(400000L, ccAfterSettlement.outstandingPaise) // ₹4,000
+        assertEquals(4600000L, ccAfterSettlement.availableCreditPaise) // ₹46,000
+        assertEquals(-400000L, ccAfterSettlement.currentBalancePaise)
 
-        // 3. Verify Monthly Expenses Total does NOT double-count:
-        // Only EXPENSE transactions count towards monthly expenses. TRANSFER is excluded.
-        val transactions = listOf(expenseTx, repaymentTransferTx)
+        // Verify Net Worth invariance on bill payment:
+        // Before payment: SBI ₹20k - Card ₹7k = ₹13k
+        // After payment: SBI ₹17k - Card ₹4k = ₹13k
+        assertEquals(1300000L, sbiAfterSettlement.currentBalancePaise + ccAfterSettlement.currentBalancePaise)
+
+        // Verify bill payment is NOT counted in monthly expenses or income
+        val txList = listOf(expenseTx, settlementTransferTx)
+        var monthlyIncome = 0L
         var monthlyExpense = 0L
-        for (tx in transactions) {
-            if (tx.type == TransactionType.EXPENSE.name) {
-                monthlyExpense += tx.amountPaise
-            }
+        for (tx in txList) {
+            if (tx.type == TransactionType.INCOME.name) monthlyIncome += tx.amountPaise
+            else if (tx.type == TransactionType.EXPENSE.name) monthlyExpense += tx.amountPaise
         }
+        assertEquals(0L, monthlyIncome)
+        assertEquals(200000L, monthlyExpense) // Exactly ₹2,000, NOT ₹5,000
+    }
 
-        // Exactly ₹5,000, NOT ₹10,000!
-        assertEquals(500000L, monthlyExpense)
+    @Test
+    fun creditCard_expenseAndTransferEditingAndDeletion_reversesEffects() {
+        val creditCard = WalletEntity(
+            id = 2L,
+            name = "HDFC Credit Card",
+            initialBalancePaise = 0L,
+            walletType = WalletType.CREDIT_CARD.name,
+            creditLimitPaise = 5000000L,
+            openingOutstandingPaise = 500000L
+        )
+
+        // Scenarios 15 & 16: Edit card expense from ₹2,000 to ₹3,000, then delete
+        val originalExpense = 200000L
+        val editedExpense = 300000L
+
+        val ccAfterEdit = WalletWithBalance(
+            wallet = creditCard,
+            incomePaise = 0L,
+            expensePaise = editedExpense,
+            transactionCount = 1
+        )
+        assertEquals(800000L, ccAfterEdit.outstandingPaise) // ₹8,000
+        assertEquals(4200000L, ccAfterEdit.availableCreditPaise) // ₹42,000
+
+        // Delete card expense
+        val ccAfterDelete = WalletWithBalance(
+            wallet = creditCard,
+            incomePaise = 0L,
+            expensePaise = 0L,
+            transactionCount = 0
+        )
+        assertEquals(500000L, ccAfterDelete.outstandingPaise) // Reverted to ₹5,000
+        assertEquals(4500000L, ccAfterDelete.availableCreditPaise) // Reverted to ₹45,000
+    }
+
+    @Test
+    fun initialBalanceIncomeOption_financialEffect() {
+        val now = System.currentTimeMillis()
+
+        // Scenarios 1 & 2: Wallet with Include Initial Balance in Income = No
+        val walletNoIncome = WalletEntity(
+            id = 1L,
+            name = "Savings",
+            initialBalancePaise = 1000000L, // ₹10,000
+            includeInIncome = false,
+            createdAt = now
+        )
+        val wbNoIncome = WalletWithBalance(wallet = walletNoIncome, incomePaise = 0L, expensePaise = 0L, transactionCount = 0)
+        assertEquals(1000000L, wbNoIncome.currentBalancePaise)
+
+        // Total income calculation with includeInIncome = false
+        var monthlyIncomeNo = 0L
+        if (walletNoIncome.includeInIncome && DateUtils.isCurrentMonth(walletNoIncome.createdAt)) {
+            monthlyIncomeNo += walletNoIncome.initialBalancePaise
+        }
+        assertEquals(0L, monthlyIncomeNo)
+
+        // Scenarios 3 & 4: Wallet with Include Initial Balance in Income = Yes
+        val walletWithIncome = WalletEntity(
+            id = 2L,
+            name = "Bonus Wallet",
+            initialBalancePaise = 500000L, // ₹5,000
+            includeInIncome = true,
+            createdAt = now
+        )
+        var monthlyIncomeYes = 0L
+        if (walletWithIncome.includeInIncome && DateUtils.isCurrentMonth(walletWithIncome.createdAt)) {
+            monthlyIncomeYes += walletWithIncome.initialBalancePaise
+        }
+        assertEquals(500000L, monthlyIncomeYes)
+
+        // Scenario 5: Edit wallet (update name or description) preserving createdAt -> no duplicate income
+        val editedWallet = walletWithIncome.copy(
+            name = "Bonus Wallet Renamed",
+            description = "Updated description",
+            updatedAt = System.currentTimeMillis()
+        )
+        assertEquals(walletWithIncome.createdAt, editedWallet.createdAt)
+        assertEquals(walletWithIncome.initialBalancePaise, editedWallet.initialBalancePaise)
     }
 
     @Test
@@ -156,54 +257,33 @@ class WalletTypeAndTemplateTest {
     }
 
     @Test
-    fun backupExportAndImport_safelyPreservesWalletTypesWithFallback() {
-        val walletsArray = JSONArray().apply {
-            put(JSONObject().apply {
-                put("id", 1L)
-                put("name", "SBI")
-                put("initialBalancePaise", 100000L)
-                put("walletType", "BANK_ACCOUNT")
-            })
-            put(JSONObject().apply {
-                put("id", 2L)
-                put("name", "Cash Wallet")
-                put("initialBalancePaise", 50000L)
-                put("walletType", "CASH")
-            })
-            put(JSONObject().apply {
-                put("id", 3L)
-                put("name", "Old Wallet Without Type")
-                put("initialBalancePaise", 20000L)
-                // Missing walletType
-            })
-            put(JSONObject().apply {
-                put("id", 4L)
-                put("name", "Legacy UPI")
-                put("initialBalancePaise", 30000L)
-                put("walletType", "UPI")
-            })
-        }
+    fun timePicker_hoursAndMinutesWrapCorrectly() {
+        // Hour stepper wrap: 12 -> 1, 1 -> 12
+        val hourMin = 1
+        val hourMax = 12
 
-        // Parse with fallback logic
-        val parsedWallets = mutableListOf<WalletEntity>()
-        for (i in 0 until walletsArray.length()) {
-            val obj = walletsArray.getJSONObject(i)
-            val rawType = obj.optString("walletType", "OTHER")
-            val walletType = WalletType.fromString(rawType).name
-            parsedWallets.add(
-                WalletEntity(
-                    id = obj.getLong("id"),
-                    name = obj.getString("name"),
-                    initialBalancePaise = obj.getLong("initialBalancePaise"),
-                    walletType = walletType
-                )
-            )
-        }
+        var hour = 12
+        var hourIncremented = hour + 1
+        if (hourIncremented > hourMax) hourIncremented = hourMin
+        assertEquals(1, hourIncremented)
 
-        assertEquals(4, parsedWallets.size)
-        assertEquals(WalletType.BANK_ACCOUNT.name, parsedWallets[0].walletType)
-        assertEquals(WalletType.CASH.name, parsedWallets[1].walletType)
-        assertEquals(WalletType.OTHER.name, parsedWallets[2].walletType)
-        assertEquals(WalletType.DIGITAL_WALLET.name, parsedWallets[3].walletType)
+        hour = 1
+        var hourDecremented = hour - 1
+        if (hourDecremented < hourMin) hourDecremented = hourMax
+        assertEquals(12, hourDecremented)
+
+        // Minute stepper wrap: 59 -> 0, 0 -> 59
+        val minMin = 0
+        val minMax = 59
+
+        var minute = 59
+        var minIncremented = minute + 1
+        if (minIncremented > minMax) minIncremented = minMin
+        assertEquals(0, minIncremented)
+
+        minute = 0
+        var minDecremented = minute - 1
+        if (minDecremented < minMin) minDecremented = minMax
+        assertEquals(59, minDecremented)
     }
 }

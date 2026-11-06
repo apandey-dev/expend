@@ -21,6 +21,10 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -41,6 +45,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.expend.tracker.R
 import com.expend.tracker.data.models.WalletType
 import com.expend.tracker.data.models.WalletWithBalance
 import com.expend.tracker.ui.components.ConfirmationBottomSheet
@@ -129,16 +134,26 @@ fun WalletsScreen(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(walletsWithBalances, key = { it.wallet.id }) { item ->
-                    WalletGridCard(
-                        item = item,
-                        onClick = {
-                            selectedWalletForDetails = item
-                        },
-                        onLongClick = {
-                            selectedWalletForActions = item
-                        }
-                    )
+                items(
+                    items = walletsWithBalances,
+                    key = { it.wallet.id },
+                    span = { item ->
+                        if (item.isCreditCard) GridItemSpan(2) else GridItemSpan(1)
+                    }
+                ) { item ->
+                    if (item.isCreditCard) {
+                        CreditCardWalletCard(
+                            item = item,
+                            onClick = { selectedWalletForDetails = item },
+                            onLongClick = { selectedWalletForActions = item }
+                        )
+                    } else {
+                        NormalWalletCard(
+                            item = item,
+                            onClick = { selectedWalletForDetails = item },
+                            onLongClick = { selectedWalletForActions = item }
+                        )
+                    }
                 }
 
                 item(span = { GridItemSpan(2) }) {
@@ -273,26 +288,25 @@ fun WalletsScreen(
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun WalletGridCard(
+private fun CreditCardWalletCard(
     item: WalletWithBalance,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
     val wallet = item.wallet
-    val walletType = WalletType.fromString(wallet.walletType)
-    val typeDisplayName = walletType.displayName
-    val isCreditCard = walletType == WalletType.CREDIT_CARD
-    val shape = RoundedCornerShape(12.dp)
+    val shape = RoundedCornerShape(16.dp)
+    val isDark = isSystemInDarkTheme()
+    val bannerBg = if (isDark) Color(0xFF242424) else Color(0xFF1E1E1E)
+    val cardBg = MaterialTheme.colorScheme.surface
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(132.dp)
             .clip(shape)
-            .background(MaterialTheme.colorScheme.surface)
+            .background(cardBg)
             .border(
                 width = 0.5.dp,
-                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
                 shape = shape
             )
             .combinedClickable(
@@ -300,60 +314,236 @@ private fun WalletGridCard(
                 onLongClick = onLongClick
             )
     ) {
-        // Large subtle monochrome watermark stamp icon in the background
-        Icon(
-            painter = painterResource(id = walletType.stampDrawableRes),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-            modifier = Modifier
-                .size(68.dp)
-                .align(Alignment.BottomEnd)
-                .offset(x = 6.dp, y = 6.dp)
-        )
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Top charcoal banner
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(bannerBg)
+                    .padding(horizontal = 16.dp, vertical = 14.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.CenterStart)
+                        .padding(end = 64.dp)
+                ) {
+                    Text(
+                        text = wallet.name,
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = Color.White,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = if (wallet.isArchived) "Credit Card • Archived" else "Credit Card",
+                        fontFamily = MaliFamily,
+                        fontSize = 12.sp,
+                        color = Color.White.copy(alpha = 0.72f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            // Top: Wallet Name & Type
-            Column {
+                // Subtle oversized credit card watermark icon on right
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_stamp_card),
+                    contentDescription = null,
+                    tint = Color.White.copy(alpha = 0.28f),
+                    modifier = Modifier
+                        .size(54.dp)
+                        .align(Alignment.CenterEnd)
+                        .offset(x = 4.dp, y = 2.dp)
+                )
+            }
+
+            // Bottom light section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
                 Text(
-                    text = wallet.name,
+                    text = "Outstanding",
                     fontFamily = MaliFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
+                    fontSize = 11.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = CurrencyFormatter.formatPaise(item.outstandingPaise),
+                    fontFamily = MaliFamily,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = if (wallet.isArchived) "$typeDisplayName • Archived" else typeDisplayName,
-                    fontFamily = MaliFamily,
-                    fontSize = 11.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+
+                Spacer(modifier = Modifier.height(10.dp))
+                HorizontalDivider(
+                    thickness = 0.5.dp,
+                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
                 )
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Limit",
+                            fontFamily = MaliFamily,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = CurrencyFormatter.formatPaise(wallet.creditLimitPaise),
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .width(0.5.dp)
+                            .height(24.dp)
+                            .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+                    )
+
+                    Column(
+                        modifier = Modifier.weight(1f),
+                        horizontalAlignment = Alignment.End
+                    ) {
+                        Text(
+                            text = "Available",
+                            fontFamily = MaliFamily,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = CurrencyFormatter.formatPaise(item.availableCreditPaise),
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun NormalWalletCard(
+    item: WalletWithBalance,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    val wallet = item.wallet
+    val walletType = WalletType.fromString(wallet.walletType)
+    val typeDisplayName = walletType.displayName
+    val shape = RoundedCornerShape(14.dp)
+    val isDark = isSystemInDarkTheme()
+    val bannerBg = if (isDark) Color(0xFF242424) else Color(0xFF1E1E1E)
+    val cardBg = MaterialTheme.colorScheme.surface
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(cardBg)
+            .border(
+                width = 0.5.dp,
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                shape = shape
+            )
+            .combinedClickable(
+                onClick = onClick,
+                onLongClick = onLongClick
+            )
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Top charcoal banner
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(bannerBg)
+                    .padding(horizontal = 10.dp, vertical = 9.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        painter = painterResource(id = walletType.stampDrawableRes),
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .width(1.dp)
+                            .height(22.dp)
+                            .background(Color.White.copy(alpha = 0.45f))
+                    )
+
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = wallet.name,
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = Color.White,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Text(
+                            text = if (wallet.isArchived) "$typeDisplayName • Archived" else typeDisplayName,
+                            fontFamily = MaliFamily,
+                            fontSize = 10.sp,
+                            color = Color.White.copy(alpha = 0.72f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
 
-            // Bottom: Current Balance / Outstanding
-            Column {
-                if (isCreditCard && item.currentBalancePaise < 0) {
-                    Text(
-                        text = "Outstanding",
-                        fontFamily = MaliFamily,
-                        fontSize = 10.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+            // Bottom light section
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = "Balance",
+                    fontFamily = MaliFamily,
+                    fontSize = 10.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     text = CurrencyFormatter.formatPaise(item.currentBalancePaise),
                     fontFamily = MaliFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 17.sp,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis

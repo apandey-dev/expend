@@ -8,6 +8,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -141,36 +144,78 @@ fun HomeScreen(
             }
         }
 
-        // ─── FINANCIAL SUMMARY ───────────────────────────────────────────────
+        // ─── FINANCIAL SUMMARY: CHARCOAL BANNER DESIGN ────────────────────────
         item {
-            MonochromeCard(modifier = Modifier.fillMaxWidth()) {
-                Column {
-                    Text(
-                        text = "Total Balance",
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = CurrencyFormatter.formatPaise(summary.totalBalancePaise),
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 26.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+            val isDark = isSystemInDarkTheme()
+            val bannerBg = if (isDark) Color(0xFF242424) else Color(0xFF1E1E1E)
+            val cardBg = MaterialTheme.colorScheme.surface
+            val shape = RoundedCornerShape(16.dp)
 
-                    Spacer(modifier = Modifier.height(14.dp))
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(shape)
+                    .background(cardBg)
+                    .border(
+                        width = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        shape = shape
+                    )
+            ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    // Top Charcoal Banner Section
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(bannerBg)
+                            .padding(horizontal = 16.dp, vertical = 16.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .align(Alignment.CenterStart)
+                                .padding(end = 64.dp)
+                        ) {
+                            Text(
+                                text = "Total Balance",
+                                fontFamily = MaliFamily,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 12.sp,
+                                color = Color.White.copy(alpha = 0.72f)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = CurrencyFormatter.formatPaise(summary.totalBalancePaise),
+                                fontFamily = MaliFamily,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 28.sp,
+                                color = Color.White
+                            )
+                        }
+
+                        // Subtle wallet watermark icon in the background
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_stamp_other),
+                            contentDescription = null,
+                            tint = Color.White.copy(alpha = 0.22f),
+                            modifier = Modifier
+                                .size(56.dp)
+                                .align(Alignment.CenterEnd)
+                                .offset(x = 4.dp, y = 2.dp)
+                        )
+                    }
+
+                    // Thin Divider between Banner and Monthly Summary
                     HorizontalDivider(
                         thickness = 0.5.dp,
                         color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
 
+                    // Bottom Light Section: Monthly Income & Expense (Strictly NO arrows)
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         // Monthly Income
                         Column(modifier = Modifier.weight(1f)) {
@@ -185,11 +230,19 @@ fun HomeScreen(
                             Text(
                                 text = "+ " + CurrencyFormatter.formatPaise(summary.monthlyIncomePaise),
                                 fontFamily = MaliFamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
+
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 12.dp)
+                                .width(0.5.dp)
+                                .height(24.dp)
+                                .background(MaterialTheme.colorScheme.outline.copy(alpha = 0.35f))
+                        )
 
                         // Monthly Expense
                         Column(
@@ -207,8 +260,8 @@ fun HomeScreen(
                             Text(
                                 text = "- " + CurrencyFormatter.formatPaise(summary.monthlyExpensePaise),
                                 fontFamily = MaliFamily,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 15.sp,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Expend — A quiet, offline-first personal expense tracker</title>
+  <meta name="description" content="A quiet, offline-first personal expense tracker built with Kotlin and Jetpack Compose. Zero ads, zero tracking, local Room database with paise minor units.">
+  
+  <!-- Favicon / App Icon -->
+  <link rel="icon" type="image/svg+xml" href="media/expend-mark.svg">
+  
+  <!-- Google Fonts: Newsreader (Editorial Serif), Inter (Clean Sans), JetBrains Mono (Code/Mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Brand Navigation -->
+  <header class="top-bar">
+    <div class="container">
+      <div class="brand-badge">
+        <img src="media/expend-mark.svg" alt="Expend Mark" class="brand-logo-img">
+        <span class="brand-title">Expend</span>
+        <span class="brand-subtext">ANDROID &bull; A PERSONAL FINANCE PROJECT</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <main>
+    <section class="hero">
+      <div class="container">
+        <div class="hero-grid">
+          
+          <!-- Left Column: Copy & CTAs -->
+          <div class="hero-content">
+            <h1 class="hero-title">
+              It tracks your expenses,<br>
+              <em>so money doesn't track you.</em>
+            </h1>
+            
+            <p class="hero-description">
+              A quiet, offline-first personal finance tracker. Keep track of credit cards, multi-wallet balances, and recurring expenses without third-party tracking, ads, or cloudy syncing. Everything stays on your phone.
+            </p>
+            
+            <div class="hero-tags">
+              <span class="hero-tag-item">100% Offline-first</span>
+              <span class="hero-tag-item">Zero ads or tracking</span>
+              <span class="hero-tag-item">Paired credit card accounting</span>
+            </div>
+            
+            <div class="hero-actions">
+              <a href="https://github.com/apandey-dev/expend/releases/latest" class="btn-primary" target="_blank" rel="noopener">
+                <span>Download for Android</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17l9.2-9.2M17 17V7H7"/>
+                </svg>
+              </a>
+              <a href="#get-it" class="btn-link">or build from source</a>
+            </div>
+            
+            <div class="hero-jump-links">
+              <a href="#the-idea" class="chip-link">THE IDEA</a>
+              <a href="#how-its-built" class="chip-link">HOW IT'S BUILT</a>
+              <a href="#get-it" class="chip-link">GET IT</a>
+            </div>
+            
+            <div class="hero-meta">
+              Free &bull; Open source &bull; MIT &bull; Android build ready now, V1 finalized
+            </div>
+          </div>
+
+          <!-- Right Column: Interactive Phone Mockup -->
+          <div class="hero-mockup-wrapper">
+            <div class="phone-mockup" role="region" aria-label="App preview">
+              <div class="phone-island">
+                <div class="phone-camera"></div>
+              </div>
+              <div class="phone-screen">
+                <div class="carousel-slide active" data-slide="0">
+                  <img src="media/screen-home.png" alt="Expend Home Screen with Total Balance Banner and Recent Transactions">
+                </div>
+                <div class="carousel-slide" data-slide="1">
+                  <img src="media/screen-wallets.png" alt="Expend Wallets Screen showing Credit Card with Outstanding and Available Limit">
+                </div>
+                <div class="carousel-slide" data-slide="2">
+                  <img src="media/screen-categories.png" alt="Expend Categories Screen with subtle pastel circular badges">
+                </div>
+                <div class="carousel-slide" data-slide="3">
+                  <img src="media/screen-transactions.png" alt="Expend All Transactions Screen with full search and filtering">
+                </div>
+              </div>
+            </div>
+
+            <div class="mockup-caption-area">
+              <div class="mockup-caption" id="carousel-caption">A quiet ledger, clear and deliberate.</div>
+              <div class="carousel-dots" role="tablist">
+                <button class="carousel-dot active" data-index="0" role="tab" aria-selected="true" aria-label="Slide 1"></button>
+                <button class="carousel-dot" data-index="1" role="tab" aria-selected="false" aria-label="Slide 2"></button>
+                <button class="carousel-dot" data-index="2" role="tab" aria-selected="false" aria-label="Slide 3"></button>
+                <button class="carousel-dot" data-index="3" role="tab" aria-selected="false" aria-label="Slide 4"></button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: The Idea -->
+    <section class="section" id="the-idea">
+      <div class="container">
+        <div class="section-eyebrow">THE IDEA</div>
+        <h2 class="section-title">Scattered across too many places</h2>
+        <p class="section-lead">
+          Credit cards bury liabilities in statement cycles. Bank accounts scatter cash across three different apps. You open multiple banking portals just to figure out how much you can actually afford to spend this weekend. Personal finance shouldn't feel like auditing an enterprise or handing your financial life over to cloud advertisers.
+        </p>
+      </div>
+    </section>
+
+    <!-- Section: What You Get (6-Card Grid) -->
+    <section class="section" id="what-you-get">
+      <div class="container">
+        <div class="section-eyebrow">WHAT YOU GET</div>
+        <h2 class="section-title">Six things worth the install</h2>
+        
+        <div class="features-grid">
+          
+          <!-- Card 01 -->
+          <div class="feature-card">
+            <div class="feature-card-header">01 [OFFLINE-FIRST]</div>
+            <h3 class="feature-card-title">Your data never leaves the phone</h3>
+            <p class="feature-card-desc">
+              No remote server, no cloud accounts, no analytics SDKs. Everything is persisted locally in SQLite via Room using exact integer minor units (paise).
+            </p>
+          </div>
+
+          <!-- Card 02 -->
+          <div class="feature-card">
+            <div class="feature-card-header">02 [CREDIT CARDS]</div>
+            <h3 class="feature-card-title">True credit card accounting</h3>
+            <p class="feature-card-desc">
+              Cards feature dedicated charcoal banners, outstanding liability balances, and available credit headroom. Bill settlements reduce debt without distorting expense totals.
+            </p>
+          </div>
+
+          <!-- Card 03 -->
+          <div class="feature-card">
+            <div class="feature-card-header">03 [TIME PICKER]</div>
+            <h3 class="feature-card-title">Custom 12-hour stepper sheet</h3>
+            <p class="feature-card-desc">
+              A bottom sheet built for thumbs. Instant hour and minute steppers with wrapping, AM/PM segmented toggle, and 50/50 confirmation actions.
+            </p>
+          </div>
+
+          <!-- Card 04 -->
+          <div class="feature-card">
+            <div class="feature-card-header">04 [TEMPLATES &amp; TYPES]</div>
+            <h3 class="feature-card-title">Context-aware fast entry</h3>
+            <p class="feature-card-desc">
+              Templates adapt strictly to the transaction type — only expense templates when logging an expense, only income templates for earnings. Never misfile.
+            </p>
+          </div>
+
+          <!-- Card 05 -->
+          <div class="feature-card">
+            <div class="feature-card-header">05 [CATEGORIES &amp; PASTELS]</div>
+            <h3 class="feature-card-title">Quiet monochrome with soft accents</h3>
+            <p class="feature-card-desc">
+              Subtle pastel circular badges distinguish categories at a glance while preserving Expend's timeless black-and-white visual identity.
+            </p>
+          </div>
+
+          <!-- Card 06 -->
+          <div class="feature-card">
+            <div class="feature-card-header">06 [BACKUPS &amp; PORTABILITY]</div>
+            <h3 class="feature-card-title">Versioned JSON backups (v5)</h3>
+            <p class="feature-card-desc">
+              Export or restore your complete financial ledger in human-readable, schema-versioned JSON. Backward-compatible with all earlier versions.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: How It's Built -->
+    <section class="section" id="how-its-built">
+      <div class="container">
+        <div class="section-eyebrow">HOW IT'S BUILT</div>
+        <h2 class="section-title">For the ones who'll ask what's underneath</h2>
+        <p class="section-lead">
+          A modern, production-grade Android stack: Kotlin 2.0+, Jetpack Compose Material 3, Room SQLite with automated schema migrations, Kotlin Coroutines &amp; StateFlow, and 25 passing unit tests.
+        </p>
+
+        <div style="margin-top: 48px;">
+          <div class="section-eyebrow">ARCHITECTURE</div>
+          <h3 style="font-family: var(--font-serif); font-size: 1.6rem; font-weight: 500; margin-bottom: 20px;">Deterministic data flow with integer minor units</h3>
+          
+          <div class="arch-diagram-wrapper">
+            <img src="media/expend-flow.svg" alt="Expend Architecture Flow Diagram: Sources flow into Core Engine Room Database and project onto Phone screens">
+          </div>
+          
+          <p class="arch-caption">
+            Transactions enter via dedicated forms or templates, flow through the financial engine where currency is computed in integer paise, persist into Room SQLite (v5 schema), and reactively project across Compose UI states.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section: Get It -->
+    <section class="section get-it-section" id="get-it">
+      <div class="container">
+        <div class="get-it-header">
+          <img src="media/expend-mark.svg" alt="Expend Logo" class="get-it-icon">
+          <div class="section-eyebrow">GET IT</div>
+          <h2 class="section-title">On your phone in about a minute</h2>
+          <p class="section-lead" style="text-align: center; margin: 0 auto;">
+            Two ways in &mdash; download the prebuilt APK directly, or compile the debug build from source in seconds.
+          </p>
+        </div>
+
+        <div class="get-it-grid">
+          
+          <!-- Download Card -->
+          <div class="get-card">
+            <div class="get-card-tag">01 [DOWNLOAD]</div>
+            <h3 class="get-card-title">You just want to track your spending</h3>
+            <p class="get-card-desc">
+              Take the latest signed V1 build straight from Releases and install it &mdash; Android 8.0 and up, nothing else to set up.
+            </p>
+            <div>
+              <a href="https://github.com/apandey-dev/expend/releases/latest" class="btn-primary" style="width: 100%; justify-content: center;" target="_blank" rel="noopener">
+                <span>Download the latest build</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M7 17l9.2-9.2M17 17V7H7"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <!-- Build from Source Card -->
+          <div class="get-card">
+            <div class="get-card-tag">02 [BUILD]</div>
+            <h3 class="get-card-title">You want to look inside it</h3>
+            <p class="get-card-desc">
+              Two commands, and about five seconds once Gradle is warm:
+            </p>
+            <div class="code-block">
+              <pre><code>git clone https://github.com/apandey-dev/expend.git
+cd expend
+./gradlew installDebug</code></pre>
+            </div>
+            <div class="get-card-footer">
+              <a href="https://github.com/apandey-dev/expend" target="_blank" rel="noopener">Source, docs and issues on GitHub</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p>A personal finance project by <a href="https://github.com/apandey-dev" target="_blank" rel="noopener">apandey-dev</a> &bull; built with Jetpack Compose &amp; Kotlin &bull; V1 Finalized &bull; 2026</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

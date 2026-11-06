@@ -7,9 +7,25 @@ data class WalletWithBalance(
     val wallet: WalletEntity,
     val incomePaise: Long,
     val expensePaise: Long,
-    val currentBalancePaise: Long = wallet.initialBalancePaise + incomePaise - expensePaise,
+    val currentBalancePaise: Long = if (wallet.isCreditCard) {
+        -((wallet.openingOutstandingPaise + expensePaise - incomePaise).coerceAtLeast(0L))
+    } else {
+        wallet.initialBalancePaise + incomePaise - expensePaise
+    },
     val transactionCount: Int
-)
+) {
+    val isCreditCard: Boolean get() = wallet.isCreditCard
+
+    val outstandingPaise: Long
+        get() = if (isCreditCard) {
+            (wallet.openingOutstandingPaise + expensePaise - incomePaise).coerceAtLeast(0L)
+        } else 0L
+
+    val availableCreditPaise: Long
+        get() = if (isCreditCard) {
+            (wallet.creditLimitPaise - outstandingPaise).coerceIn(0L, wallet.creditLimitPaise)
+        } else 0L
+}
 
 data class FinancialSummary(
     val totalBalancePaise: Long = 0L,

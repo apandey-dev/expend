@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -316,9 +318,21 @@ fun CategoriesScreen(
     }
 }
 
+private val pastelColors = listOf(
+    Color(0xFFE3F2FD), // Very light blue
+    Color(0xFFE8F5E9), // Soft pastel green
+    Color(0xFFFFF9C4), // Pale yellow
+    Color(0xFFEDE7F6), // Light lavender
+    Color(0xFFFFE0B2), // Soft peach
+    Color(0xFFFCE4EC), // Pale pink
+    Color(0xFFE0F2F1), // Soft mint
+    Color(0xFFF3E5F5)  // Pale lilac
+)
+
 /**
  * Clean Category List Tile:
  * Strictly displays only:
+ * - Category icon with subtle pastel circular background
  * - Category name
  * - Optional archived badge
  * Strictly NO visible edit, delete, archive icons or buttons.
@@ -345,7 +359,7 @@ private fun CleanCategoryTile(
                 onClick = {}, // Single tap intentionally does nothing per requirement
                 onLongClick = onLongClick
             )
-            .padding(horizontal = 14.dp, vertical = 14.dp)
+            .padding(horizontal = 14.dp, vertical = 12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -357,12 +371,26 @@ private fun CleanCategoryTile(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                 modifier = Modifier.weight(1f, fill = false)
             ) {
-                Icon(
-                    painter = painterResource(id = CategoryIconRegistry.getIconResource(category.iconId)),
-                    contentDescription = category.name,
-                    tint = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.size(20.dp)
-                )
+                val isDark = isSystemInDarkTheme()
+                val colorIndex = kotlin.math.abs(category.name.hashCode()) % pastelColors.size
+                val rawPastel = pastelColors[colorIndex]
+                val circleBg = if (isDark) rawPastel.copy(alpha = 0.22f) else rawPastel
+
+                Box(
+                    modifier = Modifier
+                        .size(34.dp)
+                        .clip(CircleShape)
+                        .background(circleBg),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        painter = painterResource(id = CategoryIconRegistry.getIconResource(category.iconId)),
+                        contentDescription = category.name,
+                        tint = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+
                 Text(
                     text = category.name,
                     fontFamily = MaliFamily,

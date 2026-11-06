@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 280" width="100%" height="auto" style="background:#fcfbfa; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <style>
+    .label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; fill: #8c827a; }
+    .title { font-size: 15px; font-weight: 600; fill: #1a1a1a; }
+    .desc  { font-size: 12px; fill: #66605b; line-height: 1.5; }
+    .box   { fill: #ffffff; stroke: #e5ded6; stroke-width: 1; rx: 12px; }
+    .arrow { stroke: #b5aca3; stroke-width: 1.5; fill: none; stroke-linecap: round; }
+    .tag   { font-size: 10px; fill: #9e958d; font-family: monospace; }
+  </style>
+
+  <!-- Left: Sources -->
+  <g transform="translate(30, 30)">
+    <rect class="box" width="240" height="220" />
+    <text class="label" x="20" y="32">SOURCES</text>
+    
+    <text class="title" x="20" y="68">Bank Accounts &amp; Cash</text>
+    <text class="desc" x="20" y="88">Savings, Checking, Cash in hand</text>
+
+    <text class="title" x="20" y="128">Credit Cards &amp; Loans</text>
+    <text class="desc" x="20" y="148">Independent liability tracking</text>
+
+    <text class="title" x="20" y="188">Digital Wallets &amp; UPI</text>
+    <text class="desc" x="20" y="208">Samsung Wallet, Paytm, Net Banking</text>
+  </g>
+
+  <!-- Arrow 1 -->
+  <path class="arrow" d="M290 140 L340 140 M330 134 L340 140 L330 146" />
+  <text class="tag" x="295" y="126">TRANSACTIONS</text>
+
+  <!-- Center: Core Engine -->
+  <g transform="translate(360, 20)">
+    <rect class="box" width="260" height="240" style="stroke:#1a1a1a; stroke-width:1.5;" />
+    <text class="label" x="20" y="32" style="fill:#1a1a1a;">EXPEND CORE ENGINE</text>
+    
+    <text class="title" x="20" y="68">Room SQLite Database</text>
+    <text class="desc" x="20" y="88">Local single source of truth (v5 schema)</text>
+
+    <text class="title" x="20" y="128">Integer Minor Units (Paise)</text>
+    <text class="desc" x="20" y="148">Exact currency math, zero float errors</text>
+
+    <text class="title" x="20" y="188">Credit Card Settlement Engine</text>
+    <text class="desc" x="20" y="208">Debt reduction via Bank transfers</text>
+  </g>
+
+  <!-- Arrow 2 -->
+  <path class="arrow" d="M640 140 L690 140 M680 134 L690 140 L680 146" />
+  <text class="tag" x="652" y="126">REACTIVE</text>
+
+  <!-- Right: Your Phone -->
+  <g transform="translate(710, 30)">
+    <rect class="box" width="180" height="220" />
+    <text class="label" x="20" y="32">YOUR PHONE</text>
+    
+    <text class="title" x="20" y="68">Jetpack Compose</text>
+    <text class="desc" x="20" y="88">Strict monochrome UI</text>
+
+    <text class="title" x="20" y="128">3 Distinct Experiences</text>
+    <text class="desc" x="20" y="148">Home, All Tx, Wallet Tx</text>
+
+    <text class="title" x="20" y="188">100% Offline</text>
+    <text class="desc" x="20" y="208">Zero tracking, local backups</text>
+  </g>
+</svg>

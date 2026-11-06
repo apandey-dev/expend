@@ -22,7 +22,7 @@ class BackupManager(
     private val database: ExpendDatabase
 ) {
     companion object {
-        const val CURRENT_BACKUP_VERSION = 4
+        const val CURRENT_BACKUP_VERSION = 5
         const val APP_ID = "com.expend.tracker"
         const val CURRENCY = "INR"
     }
@@ -49,6 +49,9 @@ class BackupManager(
                     put("walletType", com.expend.tracker.data.models.WalletType.fromString(w.walletType).name)
                     put("description", w.description)
                     put("isArchived", w.isArchived)
+                    put("includeInIncome", w.includeInIncome)
+                    put("creditLimitPaise", w.creditLimitPaise)
+                    put("openingOutstandingPaise", w.openingOutstandingPaise)
                     put("createdAt", w.createdAt)
                     put("updatedAt", w.updatedAt)
                 }
@@ -182,6 +185,9 @@ class BackupManager(
                 val walletType = com.expend.tracker.data.models.WalletType.fromString(rawWalletType).name
                 val description = obj.optString("description", "")
                 val isArchived = obj.optBoolean("isArchived", false)
+                val includeInIncome = obj.optBoolean("includeInIncome", false)
+                val creditLimitPaise = obj.optLong("creditLimitPaise", 0L)
+                val openingOutstandingPaise = obj.optLong("openingOutstandingPaise", 0L)
                 val createdAt = obj.optLong("createdAt", System.currentTimeMillis())
                 val updatedAt = obj.optLong("updatedAt", createdAt)
 
@@ -193,6 +199,9 @@ class BackupManager(
                         walletType = walletType,
                         description = description,
                         isArchived = isArchived,
+                        includeInIncome = includeInIncome,
+                        creditLimitPaise = creditLimitPaise,
+                        openingOutstandingPaise = openingOutstandingPaise,
                         createdAt = createdAt,
                         updatedAt = updatedAt
                     )

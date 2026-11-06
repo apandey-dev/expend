@@ -25,7 +25,7 @@ import kotlinx.coroutines.launch
         TemplateEntity::class,
         CategoryEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class ExpendDatabase : RoomDatabase() {
@@ -73,6 +73,14 @@ abstract class ExpendDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE wallets ADD COLUMN includeInIncome INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE wallets ADD COLUMN creditLimitPaise INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE wallets ADD COLUMN openingOutstandingPaise INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         private val defaultExpenseCategories = listOf(
             Pair("Food & Dining", "ic_cat_food"),
             Pair("Groceries", "ic_cat_groceries"),
@@ -101,7 +109,7 @@ abstract class ExpendDatabase : RoomDatabase() {
                     ExpendDatabase::class.java,
                     "expend_tracker.db"
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                     .addCallback(object : Callback() {
                         override fun onCreate(db: SupportSQLiteDatabase) {
                             super.onCreate(db)

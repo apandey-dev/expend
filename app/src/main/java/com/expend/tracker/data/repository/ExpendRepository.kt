@@ -85,7 +85,6 @@ class ExpendRepository(private val database: ExpendDatabase) {
                 wallet = wallet,
                 incomePaise = income,
                 expensePaise = expense,
-                currentBalancePaise = wallet.initialBalancePaise + income - expense,
                 transactionCount = count
             )
         }
@@ -105,6 +104,14 @@ class ExpendRepository(private val database: ExpendDatabase) {
 
         var monthlyIncome = 0L
         var monthlyExpense = 0L
+
+        // Include initial balances for wallets that opted into income reporting in their creation month
+        for (wb in activeWallets) {
+            val w = wb.wallet
+            if (!w.isCreditCard && w.includeInIncome && w.initialBalancePaise > 0L && DateUtils.isCurrentMonth(w.createdAt)) {
+                monthlyIncome += w.initialBalancePaise
+            }
+        }
 
         for (tx in transactions) {
             if (DateUtils.isCurrentMonth(tx.dateMillis)) {
@@ -203,8 +210,12 @@ class ExpendRepository(private val database: ExpendDatabase) {
         return if (wallet.id == 0L) {
             walletDao.insertWallet(wallet)
         } else {
+            val existing = walletDao.getWalletById(wallet.id)
             walletDao.updateWallet(
-                wallet.copy(updatedAt = System.currentTimeMillis())
+                wallet.copy(
+                    createdAt = existing?.createdAt ?: wallet.createdAt,
+                    updatedAt = System.currentTimeMillis()
+                )
             )
             wallet.id
         }

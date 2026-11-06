@@ -18,6 +18,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -34,10 +35,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.ExperimentalMaterial3Api
 import com.expend.tracker.data.models.WalletType
 import com.expend.tracker.ui.components.ConfirmationBottomSheet
-import com.expend.tracker.ui.components.ConfirmDialog
 import com.expend.tracker.ui.components.MonochromeOutlinedButton
 import com.expend.tracker.ui.components.MonochromePrimaryButton
 import com.expend.tracker.ui.components.MonochromeTextField
@@ -59,11 +58,17 @@ fun AddEditWalletScreen(
     var name by remember { mutableStateOf("") }
     var selectedType by remember { mutableStateOf(WalletType.CASH) }
     var initialBalanceInput by remember { mutableStateOf("") }
+    var includeInIncome by remember { mutableStateOf(false) }
+    var creditLimitInput by remember { mutableStateOf("") }
+    var openingOutstandingInput by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
 
     var originalName by remember { mutableStateOf("") }
     var originalBalance by remember { mutableStateOf("") }
     var originalType by remember { mutableStateOf(WalletType.CASH) }
+    var originalIncludeInIncome by remember { mutableStateOf(false) }
+    var originalCreditLimit by remember { mutableStateOf("") }
+    var originalOutstanding by remember { mutableStateOf("") }
 
     var isSubmitting by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -72,10 +77,23 @@ fun AddEditWalletScreen(
 
     val walletTypeSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
+    val isCreditCard = selectedType == WalletType.CREDIT_CARD
+
     val hasUnsavedChanges = if (isEditing) {
-        name != originalName || initialBalanceInput != originalBalance || selectedType != originalType
+        name != originalName ||
+                initialBalanceInput != originalBalance ||
+                selectedType != originalType ||
+                includeInIncome != originalIncludeInIncome ||
+                creditLimitInput != originalCreditLimit ||
+                openingOutstandingInput != originalOutstanding
     } else {
-        name.isNotBlank() || initialBalanceInput.isNotBlank() || description.isNotBlank() || selectedType != WalletType.CASH
+        name.isNotBlank() ||
+                initialBalanceInput.isNotBlank() ||
+                description.isNotBlank() ||
+                selectedType != WalletType.CASH ||
+                includeInIncome ||
+                creditLimitInput.isNotBlank() ||
+                openingOutstandingInput.isNotBlank()
     }
 
     BackHandler {
@@ -93,10 +111,23 @@ fun AddEditWalletScreen(
                 name = wallet.name
                 selectedType = WalletType.fromString(wallet.walletType)
                 originalType = selectedType
-                initialBalanceInput = CurrencyFormatter.paiseToEditableString(wallet.initialBalancePaise)
+                initialBalanceInput = if (wallet.initialBalancePaise != 0L) {
+                    CurrencyFormatter.paiseToEditableString(wallet.initialBalancePaise)
+                } else ""
+                includeInIncome = wallet.includeInIncome
+                creditLimitInput = if (wallet.creditLimitPaise > 0L) {
+                    CurrencyFormatter.paiseToEditableString(wallet.creditLimitPaise)
+                } else ""
+                openingOutstandingInput = if (wallet.openingOutstandingPaise > 0L) {
+                    CurrencyFormatter.paiseToEditableString(wallet.openingOutstandingPaise)
+                } else ""
                 description = wallet.description
+
                 originalName = wallet.name
                 originalBalance = initialBalanceInput
+                originalIncludeInIncome = includeInIncome
+                originalCreditLimit = creditLimitInput
+                originalOutstanding = openingOutstandingInput
             }
         }
     }
@@ -134,30 +165,7 @@ fun AddEditWalletScreen(
                 errorMessage = null
             },
             label = "Wallet Name",
-            placeholder = "e.g., Cash, SBI Savings, HDFC, Paytm"
-        )
-
-        // ─── INITIAL BALANCE ─────────────────────────────────────────────────
-        MonochromeTextField(
-            value = initialBalanceInput,
-            onValueChange = { input ->
-                if (input.all { it.isDigit() || it == '.' }) {
-                    initialBalanceInput = input
-                    errorMessage = null
-                }
-            },
-            label = "Initial Balance (₹)",
-            placeholder = "0.00",
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-            leadingIcon = {
-                Text(
-                    text = "₹",
-                    fontFamily = MaliFamily,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
+            placeholder = "e.g., Cash, SBI Savings, HDFC Credit Card, Paytm"
         )
 
         // ─── WALLET TYPE FIELD (Opens ModalBottomSheet per Specification) ───
@@ -205,6 +213,175 @@ fun AddEditWalletScreen(
             }
         }
 
+        // ─── CONDITIONAL FIELDS BASED ON WALLET TYPE ─────────────────────────
+        if (isCreditCard) {
+            // CREDIT CARD FIELDS
+            MonochromeTextField(
+                value = creditLimitInput,
+                onValueChange = { input ->
+                    if (input.all { it.isDigit() || it == '.' }) {
+                        creditLimitInput = input
+                        errorMessage = null
+                    }
+                },
+                label = "Credit Limit (₹)",
+                placeholder = "50000.00",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                leadingIcon = {
+                    Text(
+                        text = "₹",
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            )
+
+            MonochromeTextField(
+                value = openingOutstandingInput,
+                onValueChange = { input ->
+                    if (input.all { it.isDigit() || it == '.' }) {
+                        openingOutstandingInput = input
+                        errorMessage = null
+                    }
+                },
+                label = "Opening Outstanding Amount (₹) - Optional",
+                placeholder = "0.00",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                leadingIcon = {
+                    Text(
+                        text = "₹",
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            )
+
+            // Available Credit preview helper
+            val parsedLimit = CurrencyFormatter.parseAmountToPaise(creditLimitInput) ?: 0L
+            val parsedOutstanding = CurrencyFormatter.parseAmountToPaise(openingOutstandingInput) ?: 0L
+            val calcAvailCredit = (parsedLimit - parsedOutstanding).coerceAtLeast(0L)
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                    .border(
+                        width = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(horizontal = 12.dp, vertical = 10.dp)
+            ) {
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text(
+                        text = "Available Credit = Credit Limit − Opening Outstanding",
+                        fontFamily = MaliFamily,
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "Initial Available Credit: ${CurrencyFormatter.formatPaise(calcAvailCredit)}",
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        } else {
+            // NORMAL WALLET INITIAL BALANCE
+            MonochromeTextField(
+                value = initialBalanceInput,
+                onValueChange = { input ->
+                    if (input.all { it.isDigit() || it == '.' }) {
+                        initialBalanceInput = input
+                        errorMessage = null
+                    }
+                },
+                label = "Initial Balance (₹)",
+                placeholder = "0.00",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                leadingIcon = {
+                    Text(
+                        text = "₹",
+                        fontFamily = MaliFamily,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            )
+
+            // INCLUDE INITIAL BALANCE IN INCOME OPTION
+            Column {
+                Text(
+                    text = "Include Initial Balance in Income?",
+                    fontFamily = MaliFamily,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    val shape = RoundedCornerShape(8.dp)
+
+                    // Option: No (Default)
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(shape)
+                            .background(
+                                if (!includeInIncome) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { includeInIncome = false }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No",
+                            fontFamily = MaliFamily,
+                            fontWeight = if (!includeInIncome) FontWeight.SemiBold else FontWeight.Normal,
+                            fontSize = 13.sp,
+                            color = if (!includeInIncome) MaterialTheme.colorScheme.surface
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    // Option: Yes
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(shape)
+                            .background(
+                                if (includeInIncome) MaterialTheme.colorScheme.onSurface
+                                else MaterialTheme.colorScheme.surfaceVariant
+                            )
+                            .clickable { includeInIncome = true }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Yes",
+                            fontFamily = MaliFamily,
+                            fontWeight = if (includeInIncome) FontWeight.SemiBold else FontWeight.Normal,
+                            fontSize = 13.sp,
+                            color = if (includeInIncome) MaterialTheme.colorScheme.surface
+                            else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
         // ─── OPTIONAL DESCRIPTION ────────────────────────────────────────────
         MonochromeTextField(
             value = description,
@@ -228,7 +405,69 @@ fun AddEditWalletScreen(
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // ─── ACTION BUTTONS (Equal-Width 50%/50% Cancel and Save when editing) ─
+        // ─── ACTION BUTTONS ──────────────────────────────────────────────────
+        val onSaveAction = {
+            val trimmedName = name.trim()
+
+            if (trimmedName.isEmpty()) {
+                errorMessage = "Please enter a wallet name."
+            } else if (isCreditCard) {
+                val parsedLimit = CurrencyFormatter.parseAmountToPaise(creditLimitInput)
+                val parsedOutstanding = if (openingOutstandingInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(openingOutstandingInput)
+
+                when {
+                    parsedLimit == null || parsedLimit <= 0L -> {
+                        errorMessage = "Please enter a valid credit limit greater than zero."
+                    }
+                    parsedOutstanding == null || parsedOutstanding < 0L -> {
+                        errorMessage = "Please enter a valid opening outstanding amount."
+                    }
+                    parsedOutstanding > parsedLimit -> {
+                        errorMessage = "Opening outstanding amount cannot exceed credit limit."
+                    }
+                    else -> {
+                        isSubmitting = true
+                        viewModel.saveWallet(
+                            id = if (isEditing) walletId!! else 0L,
+                            name = trimmedName,
+                            initialBalancePaise = 0L,
+                            walletType = selectedType.name,
+                            description = description.trim(),
+                            includeInIncome = false,
+                            creditLimitPaise = parsedLimit,
+                            openingOutstandingPaise = parsedOutstanding,
+                            onComplete = { savedId ->
+                                onWalletSaved?.invoke(savedId)
+                                onNavigateBack()
+                            }
+                        )
+                    }
+                }
+            } else {
+                val parsedPaise = if (initialBalanceInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(initialBalanceInput)
+
+                if (parsedPaise == null) {
+                    errorMessage = "Please enter a valid initial balance."
+                } else {
+                    isSubmitting = true
+                    viewModel.saveWallet(
+                        id = if (isEditing) walletId!! else 0L,
+                        name = trimmedName,
+                        initialBalancePaise = parsedPaise,
+                        walletType = selectedType.name,
+                        description = description.trim(),
+                        includeInIncome = includeInIncome,
+                        creditLimitPaise = 0L,
+                        openingOutstandingPaise = 0L,
+                        onComplete = { savedId ->
+                            onWalletSaved?.invoke(savedId)
+                            onNavigateBack()
+                        }
+                    )
+                }
+            }
+        }
+
         if (isEditing) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -250,33 +489,7 @@ fun AddEditWalletScreen(
                 MonochromePrimaryButton(
                     text = "Save",
                     enabled = !isSubmitting,
-                    onClick = {
-                        val trimmedName = name.trim()
-                        val parsedPaise = if (initialBalanceInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(initialBalanceInput)
-
-                        when {
-                            trimmedName.isEmpty() -> {
-                                errorMessage = "Please enter a wallet name."
-                            }
-                            parsedPaise == null -> {
-                                errorMessage = "Please enter a valid initial balance."
-                            }
-                            else -> {
-                                isSubmitting = true
-                                viewModel.saveWallet(
-                                    id = walletId!!,
-                                    name = trimmedName,
-                                    initialBalancePaise = parsedPaise,
-                                    walletType = selectedType.name,
-                                    description = description.trim(),
-                                    onComplete = { savedId ->
-                                        onWalletSaved?.invoke(savedId)
-                                        onNavigateBack()
-                                    }
-                                )
-                            }
-                        }
-                    },
+                    onClick = onSaveAction,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -284,33 +497,7 @@ fun AddEditWalletScreen(
             MonochromePrimaryButton(
                 text = "Save Wallet",
                 enabled = !isSubmitting,
-                onClick = {
-                    val trimmedName = name.trim()
-                    val parsedPaise = if (initialBalanceInput.isBlank()) 0L else CurrencyFormatter.parseAmountToPaise(initialBalanceInput)
-
-                    when {
-                        trimmedName.isEmpty() -> {
-                            errorMessage = "Please enter a wallet name."
-                        }
-                        parsedPaise == null -> {
-                            errorMessage = "Please enter a valid initial balance."
-                        }
-                        else -> {
-                            isSubmitting = true
-                            viewModel.saveWallet(
-                                id = 0L,
-                                name = trimmedName,
-                                initialBalancePaise = parsedPaise,
-                                walletType = selectedType.name,
-                                description = description.trim(),
-                                onComplete = { savedId ->
-                                    onWalletSaved?.invoke(savedId)
-                                    onNavigateBack()
-                                }
-                            )
-                        }
-                    }
-                }
+                onClick = onSaveAction
             )
         }
 

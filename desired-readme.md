@@ -1,0 +1,155 @@
+<p align="center">
+  <img src="docs/media/duskread-mark.svg" alt="DuskRead" width="96" height="96">
+</p>
+
+<h1 align="center">DuskRead</h1>
+
+<p align="center">
+  <strong>A reading list that keeps itself, ranked by what you actually read.</strong><br>
+  An AI agent checks your inbox and files what's worth keeping into Notion;<br>
+  blogs you follow are read straight from their own feeds.
+</p>
+
+<p align="center">
+  <a href="https://www.notion.com/product/dev"><img src="https://img.shields.io/badge/Notion_·_curation-b45f3c?style=flat-square&logo=notion&logoColor=white" alt="Curated through Notion"></a>
+  <a href="https://www.jetbrains.com/compose-multiplatform/"><img src="https://img.shields.io/badge/Kotlin_·_Compose_Multiplatform-1a1a1a?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin and Compose Multiplatform"></a>
+  <a href="https://developer.apple.com/xcode/swiftui/"><img src="https://img.shields.io/badge/iOS_·_SwiftUI-1a1a1a?style=flat-square&logo=swift&logoColor=white" alt="SwiftUI on iOS"></a>
+  <img src="https://img.shields.io/badge/Android_12+-1a1a1a?style=flat-square&logo=android&logoColor=white" alt="Android 12 and up">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/MIT-1a1a1a?style=flat-square" alt="MIT License"></a>
+</p>
+
+<p align="center">
+  <a href="https://duskread.mksbrew.dev">See it</a> &nbsp;·&nbsp;
+  <a href="docs/architecture.md">How it fits together</a> &nbsp;·&nbsp;
+  <a href="#getting-started">Run it</a>
+</p>
+
+<p align="center"><sub>Monochrome by default. One accent, spent on purpose. About 4 MB, after R8.</sub></p>
+
+---
+
+Newsletters, blogs and the links you save land in one reading list on the
+phone. Home opens on what they published this week and ranks everything else
+by what you actually read — then you set a twenty-five minute timer and read,
+on **Paper Black** or **Ink**, the same page with the colour drained out.
+
+## What it does
+
+<p align="center">
+  <img src="docs/media/notion-flow.png" alt="Three sources — Gmail, RSS feeds, and links you share, paste or capture with the widget. Claude files the mail into Notion's Sources and Reading List, which syncs both ways with DuskRead; feeds and shared links reach the app directly, never touching Notion. The app caches everything, reads offline, and reads articles aloud on the phone">
+</p>
+
+- **Notion curates, if you want it to.** Claude files inbox newsletters into
+  the reading list, and only rows ticked `Saved` reach the phone. Blogs with a
+  working feed are fetched straight from the source and never wait on Notion.
+  Saved links and followed blogs sync both ways in the background, and only
+  when something on either side changed — see
+  [docs/architecture.md](docs/architecture.md) for the schema and sync rules.
+  The app is complete without it.
+- **Save it however it reaches you** — any app's share sheet, the home-screen
+  widget, or the paste field on Saved behind **Add**.
+- **Home is the week.** New posts from the blogs you follow, each as a card
+  carrying a line on what it says — the piece's own opening, or an on-device
+  summary once there is one.
+- **Reads offline.** Every screen renders from local storage; a feed with
+  full-content RSS is cached whole at sync time, so most articles were
+  already on the phone before you tapped them.
+- **Following is the blogs at a glance.** A cloud of short names —
+  "Android", not "Android Developers Blog" — set larger the more posts are
+  new, over a slider of a few recent posts from different blogs that changes
+  daily. Tap a name for its posts, or search across every blog and post.
+- **Saved is a queue and a record.** Unread leads as a slider of cards, each
+  with the page's own description; what you've read stays a list underneath.
+  Search a title, host or topic.
+- **On-device summaries and reading aloud.** Long articles get a one-tap
+  summary via Gemini Nano, and Home fills a few of its cards in by itself
+  where the model is already on the phone; it can also read an article aloud
+  with its own text-to-speech, or the whole unread week one post after
+  another, with the phone locked. Both are absent on hardware that can't run
+  them, and a read that can't happen says why instead of staying silent.
+- **A focus timer** that behaves like an alarm, not a widget — a real system
+  notification and vibration when the interval ends, phone face-down.
+
+## Getting started
+
+> Android is the app, built and tested day to day. iOS draws its own UI in
+> SwiftUI over the same Kotlin.
+
+```bash
+git clone https://github.com/MKS-01/duskread.git && cd duskread
+./gradlew :androidApp:installDebug      # ~5 s once warm
+```
+
+That's the whole setup — Notion is optional, and connecting it is one pasted
+token in Settings.
+
+| | |
+|---|---|
+| **JDK** | 17 or newer |
+| **Android** | 12 and up (`minSdk` 31, compile/target 36) |
+| **Gradle** | 9.3.1, via the wrapper |
+| **For summaries** | A phone with **AICore** — Pixel 9+, Galaxy S24+ and similar. No emulator has it |
+| **For iOS** | Xcode and [XcodeGen](https://github.com/yonaskolb/XcodeGen); iOS 18 and up |
+
+<details>
+<summary><strong>iOS</strong></summary>
+
+```bash
+cd iosApp && xcodegen generate && cd ..             # needs an Xcode host
+open iosApp/iosApp.xcodeproj
+```
+
+There's no Gradle run task for it — Compose Multiplatform only builds a
+framework, which the generated Xcode project links. First build is ten
+minutes or more; incremental after that.
+</details>
+
+## One core, two UIs
+
+One `commonMain` source set holds the libraries, the ranking, the sync and the
+Compose UI itself, shared between Android and iOS; storage, audio, the
+summariser, the focus timer and the HTTP client are `expect`/`actual` pairs
+behind it, on [Kotlin](https://kotlinlang.org/) 2.3 and
+[Ktor](https://ktor.io/) 3.1. Feed posts and saved links live in on-device
+SQLite through [SQLDelight](https://sqldelight.github.io/sqldelight/) 2.4, a
+row each, so a save writes one row rather than the whole list.
+Android draws that Compose UI directly with
+[Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/) 1.11
+and [Haze](https://github.com/chrisbanes/haze) for the floating-bar blur; iOS
+is the one platform that composes its own, in
+[SwiftUI](https://developer.apple.com/xcode/swiftui/) over `iosMain/bridge/`,
+taking its colours, type, spacing, motion and icon paths from the same Kotlin
+token layer rather than a second copy of them. Summaries run on-device via
+[ML Kit GenAI](https://developer.android.com/ai) / Gemini Nano; reading aloud
+is Android's own `TextToSpeech`, and `AVSpeechSynthesizer` on iOS through the
+same shared `Flow<SpeechProgress>` contract; the optional Readback tab queries
+[readback](https://github.com/MKS-01/readback)'s `library.db` read-only,
+Android-only for now. No navigation library, no ViewModel, no DI — a ceiling
+chosen on purpose.
+
+<p align="center">
+  <img src="docs/media/kmp-architecture.png" alt="commonMain holds the business logic (data, links, notion, pomodoro, reader, speech, summary), the Compose UI itself, and the design tokens. Android draws that Compose UI directly through platform actuals. iOS goes through iosMain/bridge/, which wraps AppGraph in an observable, Obj-C-safe layer, and iosApp draws its own SwiftUI from the same tokens">
+</p>
+
+```bash
+./gradlew ktlintCheck    # several rules deliberately off, see .editorconfig
+./gradlew ktlintFormat
+```
+
+No tests yet — a build that succeeds is the start of checking a change, not
+the end of it.
+
+**[duskread.mksbrew.dev](https://duskread.mksbrew.dev)** — the app's own page:
+what it's for, and the screens in Paper Black.
+**[docs/architecture.md](docs/architecture.md)** — how the pieces connect,
+the Notion schema, on-device storage and when a sync happens.
+
+## Licence
+
+MIT — see [LICENSE](LICENSE).
+
+<p align="center">
+  <sub>A personal project, built for learning and for its own author to use</sub><br>
+  <sub>Built agent-first with <a href="https://claude.ai/code">Claude Code</a></sub><br>
+  <sub>The synced-audio Readback tab is a separate, optional open-source project: <a href="https://github.com/MKS-01/readback">readback</a></sub>
+</p>

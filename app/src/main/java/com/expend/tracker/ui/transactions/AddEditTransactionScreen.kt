@@ -504,6 +504,39 @@ fun AddEditTransactionScreen(
                     }
                 }
             }
+
+            // Credit Card Bill Settlement Helper Card
+            val toWalletWithBalance = walletsWithBalances.firstOrNull { it.wallet.id == destinationWalletId }
+            if (toWallet?.isCreditCard == true && toWalletWithBalance != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .border(
+                            width = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                            shape = RoundedCornerShape(8.dp)
+                        )
+                        .padding(horizontal = 12.dp, vertical = 10.dp)
+                ) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(
+                            text = "Credit Card Bill Settlement",
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 12.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Outstanding Due: ${CurrencyFormatter.formatPaise(toWalletWithBalance.outstandingPaise)}  •  Available Credit: ${CurrencyFormatter.formatPaise(toWalletWithBalance.availableCreditPaise)}",
+                            fontFamily = MaliFamily,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
         } else {
             // STANDARD SINGLE WALLET SELECTOR
             val selectedWallet = activeWallets.firstOrNull { it.id == selectedWalletId }
@@ -695,6 +728,9 @@ fun AddEditTransactionScreen(
                     enabled = !isSubmitting,
                     onClick = {
                         val parsedPaise = CurrencyFormatter.parseAmountToPaise(amountInput)
+                        val fromWalletItem = walletsWithBalances.firstOrNull { it.wallet.id == selectedWalletId }
+                        val toWalletItem = walletsWithBalances.firstOrNull { it.wallet.id == destinationWalletId }
+
                         when {
                             parsedPaise == null || parsedPaise <= 0L -> {
                                 errorMessage = "Please enter a valid amount greater than zero."
@@ -710,6 +746,15 @@ fun AddEditTransactionScreen(
                             }
                             transactionType == TransactionType.TRANSFER && selectedWalletId == destinationWalletId -> {
                                 errorMessage = "Source and destination wallets cannot be the same."
+                            }
+                            transactionType == TransactionType.TRANSFER && fromWalletItem != null && !fromWalletItem.isCreditCard && parsedPaise > fromWalletItem.currentBalancePaise -> {
+                                errorMessage = "Insufficient balance in source wallet (${CurrencyFormatter.formatPaise(fromWalletItem.currentBalancePaise)})."
+                            }
+                            transactionType == TransactionType.TRANSFER && toWalletItem != null && toWalletItem.isCreditCard && parsedPaise > toWalletItem.outstandingPaise && toWalletItem.outstandingPaise > 0L -> {
+                                errorMessage = "Payment amount cannot exceed card outstanding balance (${CurrencyFormatter.formatPaise(toWalletItem.outstandingPaise)})."
+                            }
+                            transactionType == TransactionType.EXPENSE && fromWalletItem != null && fromWalletItem.isCreditCard && parsedPaise > fromWalletItem.availableCreditPaise -> {
+                                errorMessage = "Expense amount exceeds available credit limit (${CurrencyFormatter.formatPaise(fromWalletItem.availableCreditPaise)})."
                             }
                             else -> {
                                 isSubmitting = true
@@ -738,6 +783,9 @@ fun AddEditTransactionScreen(
                 enabled = !isSubmitting,
                 onClick = {
                     val parsedPaise = CurrencyFormatter.parseAmountToPaise(amountInput)
+                    val fromWalletItem = walletsWithBalances.firstOrNull { it.wallet.id == selectedWalletId }
+                    val toWalletItem = walletsWithBalances.firstOrNull { it.wallet.id == destinationWalletId }
+
                     when {
                         parsedPaise == null || parsedPaise <= 0L -> {
                             errorMessage = "Please enter a valid amount greater than zero."
@@ -753,6 +801,15 @@ fun AddEditTransactionScreen(
                         }
                         transactionType == TransactionType.TRANSFER && selectedWalletId == destinationWalletId -> {
                             errorMessage = "Source and destination wallets cannot be the same."
+                        }
+                        transactionType == TransactionType.TRANSFER && fromWalletItem != null && !fromWalletItem.isCreditCard && parsedPaise > fromWalletItem.currentBalancePaise -> {
+                            errorMessage = "Insufficient balance in source wallet (${CurrencyFormatter.formatPaise(fromWalletItem.currentBalancePaise)})."
+                        }
+                        transactionType == TransactionType.TRANSFER && toWalletItem != null && toWalletItem.isCreditCard && parsedPaise > toWalletItem.outstandingPaise && toWalletItem.outstandingPaise > 0L -> {
+                            errorMessage = "Payment amount cannot exceed card outstanding balance (${CurrencyFormatter.formatPaise(toWalletItem.outstandingPaise)})."
+                        }
+                        transactionType == TransactionType.EXPENSE && fromWalletItem != null && fromWalletItem.isCreditCard && parsedPaise > fromWalletItem.availableCreditPaise -> {
+                            errorMessage = "Expense amount exceeds available credit limit (${CurrencyFormatter.formatPaise(fromWalletItem.availableCreditPaise)})."
                         }
                         else -> {
                             isSubmitting = true

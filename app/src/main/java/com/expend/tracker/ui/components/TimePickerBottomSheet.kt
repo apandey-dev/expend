@@ -65,6 +65,7 @@ fun TimePickerBottomSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
+        shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp),
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
         dragHandle = {
@@ -81,7 +82,7 @@ fun TimePickerBottomSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = 20.dp)
                 .navigationBarsPadding()
         ) {
             // Header
@@ -105,9 +106,9 @@ fun TimePickerBottomSheet(
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = previewTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+                    text = previewTime.format(DateTimeFormatter.ofPattern("hh:mm a", Locale.getDefault())).lowercase(Locale.getDefault()),
                     fontFamily = MaliFamily,
-                    fontSize = 13.sp,
+                    fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -118,7 +119,7 @@ fun TimePickerBottomSheet(
                 thickness = 0.5.dp,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
             )
-            Spacer(modifier = Modifier.height(18.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Time Selector: Hour : Minute  [AM / PM]
             Row(
@@ -131,10 +132,11 @@ fun TimePickerBottomSheet(
                     Text(
                         text = "Hour",
                         fontFamily = MaliFamily,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     TimeNumberStepper(
                         value = selectedHour12,
                         minValue = 1,
@@ -148,11 +150,11 @@ fun TimePickerBottomSheet(
                     text = ":",
                     fontFamily = MaliFamily,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 22.sp,
+                    fontSize = 26.sp,
                     color = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier
-                        .padding(horizontal = 12.dp)
-                        .padding(top = 18.dp)
+                        .padding(horizontal = 14.dp)
+                        .padding(top = 22.dp)
                 )
 
                 // Minute Stepper
@@ -160,10 +162,11 @@ fun TimePickerBottomSheet(
                     Text(
                         text = "Minute",
                         fontFamily = MaliFamily,
-                        fontSize = 11.sp,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     TimeNumberStepper(
                         value = selectedMinute,
                         minValue = 0,
@@ -173,52 +176,63 @@ fun TimePickerBottomSheet(
                     )
                 }
 
-                Spacer(modifier = Modifier.width(18.dp))
+                Spacer(modifier = Modifier.width(20.dp))
 
-                // AM / PM Toggle
+                // AM / PM Segmented Selector
                 Column(
-                    modifier = Modifier.padding(top = 18.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                    modifier = Modifier
+                        .padding(top = 22.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .border(
+                            width = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
+                            shape = RoundedCornerShape(10.dp)
+                        ),
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    val amShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-                    val pmShape = RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
-
                     // AM
                     Box(
                         modifier = Modifier
-                            .clip(amShape)
+                            .width(52.dp)
                             .background(
                                 if (!isPm) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.surfaceVariant
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             )
                             .clickable { isPm = false }
-                            .padding(horizontal = 16.dp, vertical = 7.dp)
+                            .padding(vertical = 9.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "AM",
                             fontFamily = MaliFamily,
-                            fontWeight = if (!isPm) FontWeight.SemiBold else FontWeight.Normal,
+                            fontWeight = if (!isPm) FontWeight.SemiBold else FontWeight.Medium,
                             fontSize = 12.sp,
                             color = if (!isPm) MaterialTheme.colorScheme.surface
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
+                    HorizontalDivider(
+                        thickness = 0.5.dp,
+                        color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f)
+                    )
+
                     // PM
                     Box(
                         modifier = Modifier
-                            .clip(pmShape)
+                            .width(52.dp)
                             .background(
                                 if (isPm) MaterialTheme.colorScheme.onSurface
-                                else MaterialTheme.colorScheme.surfaceVariant
+                                else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                             )
                             .clickable { isPm = true }
-                            .padding(horizontal = 16.dp, vertical = 7.dp)
+                            .padding(vertical = 9.dp),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "PM",
                             fontFamily = MaliFamily,
-                            fontWeight = if (isPm) FontWeight.SemiBold else FontWeight.Normal,
+                            fontWeight = if (isPm) FontWeight.SemiBold else FontWeight.Medium,
                             fontSize = 12.sp,
                             color = if (isPm) MaterialTheme.colorScheme.surface
                             else MaterialTheme.colorScheme.onSurfaceVariant
@@ -227,12 +241,12 @@ fun TimePickerBottomSheet(
                 }
             }
 
-            Spacer(modifier = Modifier.height(26.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Equal-Width Actions: Cancel & Apply (50% / 50% split)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 MonochromeOutlinedButton(
@@ -273,12 +287,12 @@ private fun TimeNumberStepper(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f))
+            .clip(RoundedCornerShape(10.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
             .border(
                 width = 0.5.dp,
                 color = MaterialTheme.colorScheme.outline.copy(alpha = 0.35f),
-                shape = RoundedCornerShape(8.dp)
+                shape = RoundedCornerShape(10.dp)
             )
             .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
@@ -287,13 +301,13 @@ private fun TimeNumberStepper(
                 val newVal = value - 1
                 onValueChange(if (newVal < minValue) maxValue else newVal)
             },
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(36.dp)
         ) {
             Text(
                 text = "−",
                 fontFamily = MaliFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
+                fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }
@@ -302,7 +316,7 @@ private fun TimeNumberStepper(
             text = String.format(Locale.getDefault(), formatString, value),
             fontFamily = MaliFamily,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 17.sp,
+            fontSize = 18.sp,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.width(36.dp),
             textAlign = TextAlign.Center
@@ -313,13 +327,13 @@ private fun TimeNumberStepper(
                 val newVal = value + 1
                 onValueChange(if (newVal > maxValue) minValue else newVal)
             },
-            modifier = Modifier.size(32.dp)
+            modifier = Modifier.size(36.dp)
         ) {
             Text(
                 text = "+",
                 fontFamily = MaliFamily,
                 fontWeight = FontWeight.Bold,
-                fontSize = 17.sp,
+                fontSize = 18.sp,
                 color = MaterialTheme.colorScheme.onSurface
             )
         }

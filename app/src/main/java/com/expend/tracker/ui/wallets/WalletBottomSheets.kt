@@ -95,21 +95,35 @@ fun WalletDetailsBottomSheet(
                 }
 
                 Column(horizontalAlignment = Alignment.End) {
-                    if (isCreditCard && walletItem.currentBalancePaise < 0) {
+                    if (isCreditCard) {
                         Text(
                             text = "Outstanding",
                             fontFamily = MaliFamily,
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Text(
+                            text = CurrencyFormatter.formatPaise(walletItem.outstandingPaise),
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Text(
+                            text = "Available: " + CurrencyFormatter.formatPaise(walletItem.availableCreditPaise),
+                            fontFamily = MaliFamily,
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    } else {
+                        Text(
+                            text = CurrencyFormatter.formatPaise(walletItem.currentBalancePaise),
+                            fontFamily = MaliFamily,
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 18.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
                     }
-                    Text(
-                        text = CurrencyFormatter.formatPaise(walletItem.currentBalancePaise),
-                        fontFamily = MaliFamily,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
                 }
             }
 
@@ -126,24 +140,49 @@ fun WalletDetailsBottomSheet(
                     label = "Wallet Type",
                     value = typeDisplayName
                 )
-                if (isCreditCard && walletItem.currentBalancePaise < 0) {
+                if (isCreditCard) {
                     DetailRow(
-                        label = "Outstanding Due",
-                        value = CurrencyFormatter.formatPaise(-walletItem.currentBalancePaise)
+                        label = "Credit Limit",
+                        value = CurrencyFormatter.formatPaise(wallet.creditLimitPaise)
+                    )
+                    DetailRow(
+                        label = "Outstanding Amount",
+                        value = CurrencyFormatter.formatPaise(walletItem.outstandingPaise)
+                    )
+                    DetailRow(
+                        label = "Available Credit",
+                        value = CurrencyFormatter.formatPaise(walletItem.availableCreditPaise)
+                    )
+                    DetailRow(
+                        label = "Opening Outstanding",
+                        value = CurrencyFormatter.formatPaise(wallet.openingOutstandingPaise)
+                    )
+                    DetailRow(
+                        label = "Settlement Inflows",
+                        value = "+ " + CurrencyFormatter.formatPaise(walletItem.incomePaise)
+                    )
+                    DetailRow(
+                        label = "Card Spending Outflows",
+                        value = "- " + CurrencyFormatter.formatPaise(walletItem.expensePaise)
+                    )
+                } else {
+                    DetailRow(
+                        label = "Initial Balance",
+                        value = CurrencyFormatter.formatPaise(wallet.initialBalancePaise)
+                    )
+                    DetailRow(
+                        label = "Include in Income",
+                        value = if (wallet.includeInIncome) "Yes" else "No"
+                    )
+                    DetailRow(
+                        label = "Total Inflows",
+                        value = "+ " + CurrencyFormatter.formatPaise(walletItem.incomePaise)
+                    )
+                    DetailRow(
+                        label = "Total Outflows",
+                        value = "- " + CurrencyFormatter.formatPaise(walletItem.expensePaise)
                     )
                 }
-                DetailRow(
-                    label = "Initial Balance",
-                    value = CurrencyFormatter.formatPaise(wallet.initialBalancePaise)
-                )
-                DetailRow(
-                    label = "Total Inflows",
-                    value = "+ " + CurrencyFormatter.formatPaise(walletItem.incomePaise)
-                )
-                DetailRow(
-                    label = "Total Outflows",
-                    value = "- " + CurrencyFormatter.formatPaise(walletItem.expensePaise)
-                )
                 DetailRow(
                     label = "Transactions Logged",
                     value = "${walletItem.transactionCount}"

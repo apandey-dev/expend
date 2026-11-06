@@ -1,63 +1,78 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 280" width="100%" height="auto" style="background:#fcfbfa; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 300" width="100%" height="auto" style="background:transparent; font-family:'Mali', cursive, sans-serif;">
   <style>
-    .label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; fill: #8c827a; }
-    .title { font-size: 15px; font-weight: 600; fill: #1a1a1a; }
-    .desc  { font-size: 12px; fill: #66605b; line-height: 1.5; }
-    .box   { fill: #ffffff; stroke: #e5ded6; stroke-width: 1; rx: 12px; }
-    .arrow { stroke: #b5aca3; stroke-width: 1.5; fill: none; stroke-linecap: round; }
-    .tag   { font-size: 10px; fill: #9e958d; font-family: monospace; }
+    @import url('https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap');
+    .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; fill: #8F877F; }
+    .title { font-family: 'Mali', cursive, sans-serif; font-size: 15px; font-weight: 700; fill: #1A1918; }
+    .desc  { font-family: 'Mali', cursive, sans-serif; font-size: 12px; font-weight: 400; fill: #6B645C; }
+    .box   { fill: #F4EFEA; stroke: #E6DFD5; stroke-width: 1; rx: 12px; }
+    .box-highlight { fill: #FAF7F2; stroke: #B45F3C; stroke-width: 1.5; rx: 12px; }
+    .inner-box { fill: #FFFFFF; stroke: #E2DBD0; stroke-width: 1; rx: 8px; }
+    .arrow { stroke: #BBAFA3; stroke-width: 1.5; fill: none; stroke-linecap: round; }
+    .tag   { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; fill: #948A80; letter-spacing: 0.05em; }
+    .bottom-note { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; fill: #948A80; text-anchor: middle; }
   </style>
 
   <!-- Left: Sources -->
-  <g transform="translate(30, 30)">
-    <rect class="box" width="240" height="220" />
-    <text class="label" x="20" y="32">SOURCES</text>
+  <g transform="translate(30, 24)">
+    <text class="label" x="0" y="0">SOURCES</text>
+    <rect class="box" x="0" y="10" width="250" height="200" />
     
-    <text class="title" x="20" y="68">Bank Accounts &amp; Cash</text>
-    <text class="desc" x="20" y="88">Savings, Checking, Cash in hand</text>
+    <text class="title" x="20" y="44">Bank Accounts &amp; Cash</text>
+    <text class="desc" x="20" y="62">savings, checking, physical cash</text>
 
-    <text class="title" x="20" y="128">Credit Cards &amp; Loans</text>
-    <text class="desc" x="20" y="148">Independent liability tracking</text>
+    <text class="title" x="20" y="102">Credit Cards &amp; Limits</text>
+    <text class="desc" x="20" y="120">independent liability &amp; billing</text>
 
-    <text class="title" x="20" y="188">Digital Wallets &amp; UPI</text>
-    <text class="desc" x="20" y="208">Samsung Wallet, Paytm, Net Banking</text>
+    <text class="title" x="20" y="160">You</text>
+    <text class="desc" x="20" y="178">two-tap transaction entry, templates</text>
   </g>
 
-  <!-- Arrow 1 -->
-  <path class="arrow" d="M290 140 L340 140 M330 134 L340 140 L330 146" />
-  <text class="tag" x="295" y="126">TRANSACTIONS</text>
+  <!-- Arrow 1: Sources -> Engine -->
+  <g transform="translate(290, 120)">
+    <path class="arrow" d="M0 0 L54 0 M46 -5 L54 0 L46 5" />
+    <text class="tag" x="12" y="-10">FILES</text>
+  </g>
 
   <!-- Center: Core Engine -->
-  <g transform="translate(360, 20)">
-    <rect class="box" width="260" height="240" style="stroke:#1a1a1a; stroke-width:1.5;" />
-    <text class="label" x="20" y="32" style="fill:#1a1a1a;">EXPEND CORE ENGINE</text>
+  <g transform="translate(355, 24)">
+    <text class="label" x="0" y="0">ROOM &bull; FINANCIAL ENGINE</text>
+    <rect class="box-highlight" x="0" y="10" width="290" height="200" />
     
-    <text class="title" x="20" y="68">Room SQLite Database</text>
-    <text class="desc" x="20" y="88">Local single source of truth (v5 schema)</text>
+    <!-- Inner pill for Core -->
+    <g transform="translate(16, 26)">
+      <rect class="inner-box" x="0" y="0" width="258" height="64" />
+      <text class="title" x="14" y="26" style="fill:#B45F3C;">Expend Engine</text>
+      <text class="desc" x="14" y="46">computes balance, settles card bills</text>
+    </g>
 
-    <text class="title" x="20" y="128">Integer Minor Units (Paise)</text>
-    <text class="desc" x="20" y="148">Exact currency math, zero float errors</text>
-
-    <text class="title" x="20" y="188">Credit Card Settlement Engine</text>
-    <text class="desc" x="20" y="208">Debt reduction via Bank transfers</text>
+    <g transform="translate(16, 102)">
+      <text class="title" x="4" y="22">Integer Paise Ledger</text>
+      <text class="desc" x="4" y="42">zero float drift &bull; strict v5 schema</text>
+      <text class="desc" x="4" y="62">isolated on device &bull; fast local queries</text>
+    </g>
   </g>
 
-  <!-- Arrow 2 -->
-  <path class="arrow" d="M640 140 L690 140 M680 134 L690 140 L680 146" />
-  <text class="tag" x="652" y="126">REACTIVE</text>
+  <!-- Arrow 2: Engine -> Phone -->
+  <g transform="translate(655, 120)">
+    <path class="arrow" d="M0 0 L54 0 M46 -5 L54 0 L46 5" />
+    <text class="tag" x="12" y="-10">REACTIVE</text>
+  </g>
 
   <!-- Right: Your Phone -->
-  <g transform="translate(710, 30)">
-    <rect class="box" width="180" height="220" />
-    <text class="label" x="20" y="32">YOUR PHONE</text>
+  <g transform="translate(720, 24)">
+    <text class="label" x="0" y="0">YOUR PHONE</text>
+    <rect class="box" x="0" y="10" width="230" height="200" />
     
-    <text class="title" x="20" y="68">Jetpack Compose</text>
-    <text class="desc" x="20" y="88">Strict monochrome UI</text>
+    <text class="title" x="20" y="46">Expend</text>
+    <text class="desc" x="20" y="70">Home &bull; Wallets &bull; Transactions</text>
+    <text class="desc" x="20" y="92">Categories &bull; Stats</text>
 
-    <text class="title" x="20" y="128">3 Distinct Experiences</text>
-    <text class="desc" x="20" y="148">Home, All Tx, Wallet Tx</text>
-
-    <text class="title" x="20" y="188">100% Offline</text>
-    <text class="desc" x="20" y="208">Zero tracking, local backups</text>
+    <text class="desc" x="20" y="132" style="fill:#1A1918; font-weight:600;">Monochrome UI</text>
+    <text class="desc" x="20" y="152">soft pastel category accents</text>
+    <text class="desc" x="20" y="174">100% offline by default</text>
   </g>
+
+  <!-- Dashed line at bottom -->
+  <path d="M 60 258 L 920 258" stroke="#E2DBD0" stroke-width="1" stroke-dasharray="4 4" />
+  <text class="bottom-note" x="490" y="278">ALL FINANCIAL DATA &amp; BACKUPS STAY ON YOUR DEVICE &bull; NOTHING IS EVER UPLOADED</text>
 </svg>

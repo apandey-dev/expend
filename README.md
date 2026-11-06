@@ -50,7 +50,7 @@ in two taps, on pure dark charcoal or paper white, with the noise drained out.
 ## What it does
 
 <p align="center">
-  <img src="docs/media/expend-flow.svg" alt="Expend architecture flow: Sources (Accounts, Credit Cards, Cash) log transactions into the Core Engine (Room SQLite Database, Integer Minor Units in paise, and Settlement Engine), projecting reactively to your phone (Jetpack Compose, 3 distinct transaction experiences, 100% offline)">
+  <img src="docs/media/expend-flow.png" width="100%" alt="Expend Architecture Flow: Sources (Bank Accounts, Credit Cards, Cash) log transactions into the Core Engine (Room SQLite Database, Integer Minor Units in paise, and Settlement Engine), projecting reactively to your phone (Jetpack Compose, 3 distinct transaction experiences, 100% offline)">
 </p>
 
 - **Your money data never leaves the phone.** Zero network permissions, no cloud

@@ -1,6 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 300" width="100%" height="auto" style="background:transparent; font-family:'Mali', cursive, sans-serif;">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Mali:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap');
     .label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; fill: #8F877F; }
     .title { font-family: 'Mali', cursive, sans-serif; font-size: 15px; font-weight: 700; fill: #1A1918; }
     .desc  { font-family: 'Mali', cursive, sans-serif; font-size: 12px; font-weight: 400; fill: #6B645C; }

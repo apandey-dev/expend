@@ -17,3 +17,4 @@ app/build
 .kotlin/
 ui_*.xml
 *.log
+build_release_assets/

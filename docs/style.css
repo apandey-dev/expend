@@ -192,8 +192,8 @@ a {
   font-family: var(--font-main);
   font-weight: 600;
   font-size: 1.05rem;
-  padding: 14px 28px;
-  border-radius: 28px;
+  padding: 13px 26px;
+  border-radius: 8px;
   border: 1px solid var(--brand-dark);
   transition: all 0.2s ease;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -597,22 +597,25 @@ a {
 /* ==========================================================================
    Footer
    ========================================================================== */
-.footer {
+.project-credit-line {
   border-top: 1px solid var(--border-subtle);
-  padding: 56px 0;
+  padding: 36px 0 32px;
   text-align: center;
   font-family: var(--font-main);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
   line-height: 1.8;
+  background-color: var(--bg-color);
 }
 
-.footer a {
+.project-credit-line a {
   color: var(--text-secondary);
   font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
-.footer a:hover {
+.project-credit-line a:hover {
   color: var(--accent-rust);
 }
 

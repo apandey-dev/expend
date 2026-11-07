@@ -2,19 +2,19 @@
    Expend Showcase — Theme Stylesheet (Light, Dark, and System Default)
    ========================================================================== */
 
-/* 1. Theme Variables & Defaults */
+/* 1. Theme Variables & Design Tokens */
 :root {
-  /* Font & Dimensions */
+  /* Font Families & Dimensions */
   --font-main: 'Mali', cursive, sans-serif;
   --font-mono: 'JetBrains Mono', SFMono-Regular, Consolas, Menlo, monospace;
   --max-width: 1220px;
   --phone-width: 340px;
   --phone-height: 690px;
   
-  /* Light Theme (Default Warm Ivory) */
+  /* Light Theme (Warm Ivory & Charcoal) */
   --bg-color: #FAF7F2;
   --surface-card: #F5EFE8;
-  --surface-card-hover: #F0E9E1;
+  --surface-card-hover: #EFE8DF;
   --surface-white: #FFFFFF;
   --surface-code: #ECE5DC;
   
@@ -32,9 +32,19 @@
   --brand-dark: #1E1E1E;
   --brand-hover: #333333;
 
-  /* Typography Banner */
+  /* Button Tokens (Minimal Rectangular) */
+  --button-primary-bg: #1E1E1E;
+  --button-primary-text: #FAF7F2;
+  --button-primary-border: #1E1E1E;
+  --button-primary-hover-bg: #333333;
+  --button-primary-hover-border: #333333;
+  --button-primary-hover-text: #FAF7F2;
+
+  /* Typography Banner Tokens */
   --banner-bg: #000000;
   --banner-text: #262422;
+  --banner-glow: #E07A5F;
+  --banner-glow-shadow: rgba(224, 122, 95, 0.45);
 
   /* Theme Switcher */
   --toggle-bg: #EFE8DF;
@@ -51,7 +61,7 @@
 [data-theme="dark"] {
   --bg-color: #0F0E0D;
   --surface-card: #181716;
-  --surface-card-hover: #201E1C;
+  --surface-card-hover: #22201E;
   --surface-white: #1C1B19;
   --surface-code: #141312;
   
@@ -69,8 +79,18 @@
   --brand-dark: #2A2724;
   --brand-hover: #383430;
 
+  /* Dark Theme Buttons (High Contrast & Clear) */
+  --button-primary-bg: #FAF7F2;
+  --button-primary-text: #121110;
+  --button-primary-border: #FAF7F2;
+  --button-primary-hover-bg: #EAE5DE;
+  --button-primary-hover-border: #EAE5DE;
+  --button-primary-hover-text: #121110;
+
   --banner-bg: #000000;
   --banner-text: #22201E;
+  --banner-glow: #E68A6E;
+  --banner-glow-shadow: rgba(230, 138, 110, 0.5);
 
   --toggle-bg: #1C1B19;
   --toggle-border: #2A2825;
@@ -87,7 +107,7 @@
   :root:not([data-theme="light"]) {
     --bg-color: #0F0E0D;
     --surface-card: #181716;
-    --surface-card-hover: #201E1C;
+    --surface-card-hover: #22201E;
     --surface-white: #1C1B19;
     --surface-code: #141312;
     
@@ -105,8 +125,17 @@
     --brand-dark: #2A2724;
     --brand-hover: #383430;
 
+    --button-primary-bg: #FAF7F2;
+    --button-primary-text: #121110;
+    --button-primary-border: #FAF7F2;
+    --button-primary-hover-bg: #EAE5DE;
+    --button-primary-hover-border: #EAE5DE;
+    --button-primary-hover-text: #121110;
+
     --banner-bg: #000000;
     --banner-text: #22201E;
+    --banner-glow: #E68A6E;
+    --banner-glow-shadow: rgba(230, 138, 110, 0.5);
 
     --toggle-bg: #1C1B19;
     --toggle-border: #2A2825;
@@ -119,67 +148,86 @@
   }
 }
 
-/* 4. Adaptive Component Styles for Dark Theme */
-[data-theme="dark"] .chip-link,
-:root:not([data-theme="light"]) .chip-link {
-  background-color: var(--surface-card);
-  border-color: var(--border-color);
+/* 4. Minimal Rectangular Button & Interactive Control Styling */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background-color: var(--button-primary-bg);
+  color: var(--button-primary-text) !important;
+  border: 1px solid var(--button-primary-border);
+  border-radius: 8px; /* Clean rectangular corners — no pill shapes */
+  font-family: var(--font-main);
+  font-weight: 600;
+  font-size: 1.02rem;
+  padding: 13px 26px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.btn-primary:hover {
+  background-color: var(--button-primary-hover-bg);
+  border-color: var(--button-primary-hover-border);
+  color: var(--button-primary-hover-text) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--accent-rust);
+  outline-offset: 3px;
+}
+
+.btn-link {
+  font-family: var(--font-main);
+  font-size: 0.98rem;
+  font-weight: 500;
   color: var(--text-secondary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--border-color);
+  transition: color 0.18s ease, text-decoration-color 0.18s ease;
 }
 
-[data-theme="dark"] .chip-link:hover,
-:root:not([data-theme="light"]) .chip-link:hover {
-  background-color: var(--surface-card-hover);
-  border-color: var(--accent-rust);
+.btn-link:hover {
   color: var(--accent-rust);
+  text-decoration-color: var(--accent-rust);
 }
 
-[data-theme="dark"] .btn-primary,
-:root:not([data-theme="light"]) .btn-primary {
-  background-color: var(--text-primary);
-  color: #0F0E0D;
-  border-color: var(--text-primary);
-}
-
-[data-theme="dark"] .btn-primary:hover,
-:root:not([data-theme="light"]) .btn-primary:hover {
-  background-color: #E2DDD7;
-  border-color: #E2DDD7;
-  color: #0F0E0D;
-}
-
-[data-theme="dark"] .btn-link,
-:root:not([data-theme="light"]) .btn-link {
-  color: var(--text-secondary);
-  border-bottom-color: var(--border-color);
-}
-
-[data-theme="dark"] .btn-link:hover,
-:root:not([data-theme="light"]) .btn-link:hover {
-  color: var(--accent-rust);
-  border-bottom-color: var(--accent-rust);
-}
-
-[data-theme="dark"] .phone-mockup,
-:root:not([data-theme="light"]) .phone-mockup {
-  border-color: #2D2A26;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.4);
-}
-
-[data-theme="dark"] .code-block,
-:root:not([data-theme="light"]) .code-block {
-  background-color: var(--surface-code);
-  border-color: var(--border-color);
-  color: var(--text-primary);
-}
-
-[data-theme="dark"] .footer,
-:root:not([data-theme="light"]) .footer {
-  border-top-color: var(--border-subtle);
+.chip-link {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 6px 13px;
+  border-radius: 6px; /* Clean rectangular chips */
+  background: var(--surface-card);
+  transition: all 0.18s ease;
 }
 
-/* 5. Theme Switcher Layout & Controls */
+.chip-link:hover {
+  background: var(--surface-card-hover);
+  color: var(--accent-rust);
+  border-color: var(--accent-rust);
+}
+
+.hero-tag-item {
+  background-color: var(--surface-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px; /* Clean rectangular badges */
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 5. Theme Switcher Control (Minimal Rectangular Design) */
 .top-bar-inner {
   display: flex;
   align-items: center;
@@ -192,9 +240,9 @@
   align-items: center;
   background-color: var(--toggle-bg);
   border: 1px solid var(--toggle-border);
-  border-radius: 9999px;
+  border-radius: 8px; /* Clean rectangular container */
   padding: 3px;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
@@ -203,12 +251,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 9999px;
+  border-radius: 6px;
   color: var(--toggle-btn-text);
   cursor: pointer;
   transition: all 0.18s ease;
@@ -235,4 +283,42 @@
 .theme-btn:focus-visible {
   outline: 2px solid var(--accent-rust);
   outline-offset: 2px;
+}
+
+/* 6. Project Credit Line (Above EXPEND Banner) */
+.project-credit-line {
+  padding: 36px 0 32px;
+  text-align: center;
+  font-family: var(--font-main);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.8;
+  border-top: 1px solid var(--border-subtle);
+  background-color: var(--bg-color);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.project-credit-line a {
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.18s ease;
+}
+
+.project-credit-line a:hover {
+  color: var(--accent-rust);
+}
+
+/* 7. Screen Reader Only Utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }

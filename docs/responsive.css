@@ -315,7 +315,7 @@ img, svg {
 }
 
 /* --------------------------------------------------------------------------
-   7. EXPEND Oversized Bottom Typography Banner — Precise Intentional Cropping
+   7. EXPEND Oversized Bottom Typography Banner & Invisible Cursor Glow
    -------------------------------------------------------------------------- */
 .brand-typography-banner {
   width: 100%;
@@ -337,9 +337,12 @@ img, svg {
   justify-content: center;
   align-items: flex-start;
   padding-top: clamp(24px, 4vw, 56px);
-  /* Container height calculated so bottom 10-15% of the oversized letters extend beyond the boundary */
+  /* Height proportioned so bottom 10-15% of the oversized letters extend beyond and are cropped */
   height: clamp(80px, 17vw, 220px);
   box-sizing: border-box;
+  --glow-x: -999px;
+  --glow-y: -999px;
+  --glow-opacity: 0;
 }
 
 .brand-typography-text {
@@ -350,16 +353,60 @@ img, svg {
   letter-spacing: clamp(0.01em, 0.03em, 0.05em);
   text-align: center;
   text-transform: uppercase;
-  color: var(--banner-text, #262422);
   margin: 0;
   padding: 0;
   user-select: none;
   white-space: nowrap;
   pointer-events: none;
   display: inline-block;
-  /* Shift down by 12% so approximately 10-15% of letter height is intentionally clipped */
   transform: translateY(12%);
   will-change: transform;
+}
+
+/* Base text layer */
+.brand-typography-text.base-text {
+  color: var(--banner-text, #262422);
+  position: relative;
+  z-index: 1;
+}
+
+/* Separate Glow layer clipped strictly to cursor proximity */
+.brand-typography-text.glow-text {
+  position: absolute;
+  top: clamp(24px, 4vw, 56px);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  z-index: 2;
+  color: var(--banner-glow, #E07A5F);
+  text-shadow: 0 0 20px var(--banner-glow-shadow, rgba(224, 122, 95, 0.45));
+  opacity: var(--glow-opacity, 0);
+  transition: opacity 0.25s ease;
+  
+  /* Radial mask centered on cursor — invisible boundary with soft gradual falloff */
+  -webkit-mask-image: radial-gradient(
+    circle 220px at var(--glow-x, -999px) var(--glow-y, -999px),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.8) 25%,
+    rgba(0, 0, 0, 0.45) 55%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    circle 220px at var(--glow-x, -999px) var(--glow-y, -999px),
+    rgba(0, 0, 0, 1) 0%,
+    rgba(0, 0, 0, 0.8) 25%,
+    rgba(0, 0, 0, 0.45) 55%,
+    rgba(0, 0, 0, 0.1) 80%,
+    transparent 100%
+  );
+}
+
+/* Touch devices: disable cursor proximity glow */
+@media (hover: none) or (pointer: coarse) {
+  .brand-typography-text.glow-text {
+    display: none !important;
+  }
 }
 
 @media (max-width: 600px) {
@@ -371,6 +418,10 @@ img, svg {
   .brand-typography-text {
     font-size: clamp(4.2rem, 23.5vw, 6.8rem);
     transform: translateY(13%);
+  }
+
+  .brand-typography-text.glow-text {
+    top: clamp(16px, 4vw, 28px);
   }
 }
 
@@ -384,6 +435,10 @@ img, svg {
     font-size: 3.8rem;
     transform: translateY(14%);
   }
+
+  .brand-typography-text.glow-text {
+    top: 14px;
+  }
 }
 
 /* --------------------------------------------------------------------------
@@ -395,5 +450,9 @@ img, svg {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+  
+  .brand-typography-text.glow-text {
+    transition: none !important;
   }
 }

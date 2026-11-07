@@ -308,19 +308,21 @@ cd expend
     </section>
   </main>
 
-  <!-- Typography Banner -->
-  <section class="brand-typography-banner" aria-label="Expend typography banner">
-    <div class="brand-typography-clip">
-      <span class="brand-typography-text">EXPEND</span>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
+  <!-- Project Credit Line (Positioned Immediately Above Typography Banner) -->
+  <aside class="project-credit-line" aria-label="Project credits">
     <div class="container">
       <p>A personal finance project by <a href="https://github.com/apandey-dev" target="_blank" rel="noopener">apandey-dev</a> &bull; built with Jetpack Compose &amp; Kotlin &bull; V1 Finalized &bull; 2026</p>
     </div>
-  </footer>
+  </aside>
+
+  <!-- Large Edge-to-Edge Typography Banner (Final Visual Section) -->
+  <section class="brand-typography-banner" aria-label="Expend typography banner">
+    <div class="brand-typography-clip">
+      <span class="brand-typography-text base-text" aria-hidden="true">EXPEND</span>
+      <span class="brand-typography-text glow-text" aria-hidden="true">EXPEND</span>
+      <span class="sr-only">EXPEND</span>
+    </div>
+  </section>
 
   <script src="app.js"></script>
 </body>

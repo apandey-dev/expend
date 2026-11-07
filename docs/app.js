@@ -145,4 +145,66 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // -------------------------------------------------------------------------
+  // Invisible Cursor-Proximity Glow Effect on EXPEND Typography Banner
+  // -------------------------------------------------------------------------
+  const banner = document.querySelector('.brand-typography-banner');
+  const clip = document.querySelector('.brand-typography-clip');
+
+  if (banner && clip && window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    let isHovered = false;
+    let targetX = -999;
+    let targetY = -999;
+    let currentX = -999;
+    let currentY = -999;
+    let rafId = null;
+
+    function renderGlow() {
+      if (!isHovered) {
+        clip.style.setProperty('--glow-opacity', '0');
+        rafId = null;
+        return;
+      }
+
+      // Smooth fluid interpolation towards pointer coordinates
+      currentX += (targetX - currentX) * 0.3;
+      currentY += (targetY - currentY) * 0.3;
+
+      clip.style.setProperty('--glow-x', `${currentX.toFixed(1)}px`);
+      clip.style.setProperty('--glow-y', `${currentY.toFixed(1)}px`);
+      clip.style.setProperty('--glow-opacity', '1');
+
+      rafId = requestAnimationFrame(renderGlow);
+    }
+
+    banner.addEventListener('mouseenter', (e) => {
+      isHovered = true;
+      const rect = clip.getBoundingClientRect();
+      targetX = e.clientX - rect.left;
+      targetY = e.clientY - rect.top;
+      currentX = targetX;
+      currentY = targetY;
+      if (!rafId) {
+        rafId = requestAnimationFrame(renderGlow);
+      }
+    });
+
+    banner.addEventListener('mousemove', (e) => {
+      const rect = clip.getBoundingClientRect();
+      targetX = e.clientX - rect.left;
+      targetY = e.clientY - rect.top;
+      if (!isHovered) {
+        isHovered = true;
+        if (!rafId) {
+          rafId = requestAnimationFrame(renderGlow);
+        }
+      }
+    });
+
+    banner.addEventListener('mouseleave', () => {
+      isHovered = false;
+      clip.style.setProperty('--glow-opacity', '0');
+    });
+  }
 });

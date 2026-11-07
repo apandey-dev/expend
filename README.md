@@ -57,10 +57,16 @@ in two taps, on pure dark charcoal or paper white, with the noise drained out.
   accounts, no tracking SDKs, and no telemetry. Everything is persisted locally
   in SQLite via Room using integer minor units (paise) to eliminate floating-point
   rounding errors entirely.
-- **True credit card accounting.** Dual-section credit card cards display current
-  outstanding liabilities, total credit limits, and available spending headroom.
-  Bill payments from bank accounts are recorded as settlement transfers — reducing
-  outstanding card balance without corrupting monthly expense calculations.
+- **Customizable multi-wallet architecture.** Users can create and configure as
+  many wallets as needed to reflect their exact financial life — physical cash,
+  daily bank accounts, savings reserves, digital wallets (UPI), business funds, or
+  custom accounts. Each wallet supports custom naming, starting balances, notes,
+  visual stamp archetypes, an optional starting balance income inclusion setting,
+  and archiving when accounts are closed.
+- **True credit card accounting.** Rather than treating credit cards as regular
+  accounts, Expend tracks them as liabilities. Dual-section cards show live outstanding
+  debt, total credit limits, and available spending headroom. Card bill settlements
+  from bank accounts reduce debt without double-counting monthly expenses.
 - **Three dedicated transaction experiences.** Normal Transactions preserves
   the bottom navigation bar; tapping *View All* from Home opens a dedicated, full-screen
   **All Transactions** destination; selecting a wallet opens a dedicated, filtered
@@ -71,9 +77,10 @@ in two taps, on pure dark charcoal or paper white, with the noise drained out.
 - **Custom 12-hour stepper time picker.** A bespoke bottom sheet built for thumbs:
   instant hour and minute adjustments with wraparound (12 ↔ 1 and 59 ↔ 0), AM/PM toggle,
   live header preview, and balanced 50/50 confirmation actions.
-- **Subtle pastel category badges.** Category icons feature subtle pastel circular
-  backgrounds that make categories instantly distinguishable while keeping icons
-  monochrome and preserving Expend's quiet visual identity.
+- **Subtle pastel category badges.** Create custom categories for any expense or income
+  need. Each category features soft pastel circular backgrounds with monochrome vector
+  icons (selectable from a 40-icon built-in catalog), making categories instantly recognizable
+  while preserving Expend's quiet visual identity.
 - **Full-screen entity workflows.** Bottom sheets are reserved strictly for selection,
   details, and lightweight actions. Creating or editing wallets, categories, templates,
   and transactions always navigates to dedicated full-screen pages with proper state restoration.

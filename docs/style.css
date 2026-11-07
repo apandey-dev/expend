@@ -617,6 +617,37 @@ a {
 }
 
 /* ==========================================================================
+   Brand Typography Banner
+   ========================================================================== */
+.brand-typography-banner {
+  width: 100%;
+  background-color: var(--brand-dark);
+  padding: clamp(36px, 6vw, 72px) 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  border-top: 1px solid var(--brand-dark);
+}
+
+.brand-typography-text {
+  font-family: var(--font-main);
+  font-weight: 700;
+  font-size: clamp(3.25rem, 15vw, 11.5rem);
+  line-height: 0.95;
+  letter-spacing: clamp(0.02em, 0.05em, 0.08em);
+  text-align: center;
+  text-transform: uppercase;
+  color: rgba(250, 247, 242, 0.28);
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* ==========================================================================
    Responsive Breakpoints
    ========================================================================== */
 @media (max-width: 960px) {

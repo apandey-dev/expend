@@ -8,15 +8,16 @@ Expend is an offline-first, quiet personal finance tracker designed to help you 
 
 ### Highlights in V1.0.0
 
+* **Customizable Multi-Wallet Architecture:**
+  * Create and manage unlimited wallets configured to match your exact financial setup (Cash, Bank Accounts, Digital Wallets / UPI, Savings, Business, or custom accounts).
+  * Clean, minimal cards featuring visual archetype stamps, balance summaries, initial balance income toggling, and complete ledger history.
+  * Full support for editing, archiving, and managing wallet accounts.
+
 * **True Credit Card Accounting:**
   * Dual-section credit card cards with dark charcoal header and live debt tracking.
   * Displays outstanding balance, total credit limit, and available spending headroom.
   * Bill settlement transfers from bank accounts reduce debt without double-counting monthly expenses.
   * Initial balance income inclusion option.
-
-* **Normal Wallet Cards & 7 Wallet Types:**
-  * Clean, minimal cards featuring wallet type glyph, balance summary, and full ledger history.
-  * Supports Cash, Bank Account, Digital Wallet, Credit Card, Savings, Business, and Other.
 
 * **Context-Aware Templates:**
   * Template selection filters strictly by transaction type (Expense templates for expenses, Income templates for earnings).
@@ -27,9 +28,9 @@ Expend is an offline-first, quiet personal finance tracker designed to help you 
   * Steppers with wrap-around logic (12 ↔ 1 and 59 ↔ 0) and AM/PM segmented toggle.
   * 50/50 confirmation actions.
 
-* **Subtle Pastel Category Badges:**
-  * Categories feature soft pastel circular backgrounds behind monochrome vector icons.
-  * Instant visual distinction without breaking Expend's minimal aesthetic.
+* **Subtle Pastel Category Badges & 40-Icon Catalog:**
+  * Custom categories for any income or expense stream, with soft pastel circular backgrounds behind monochrome vector icons.
+  * Choose from 40 built-in vector icons for instant visual recognition.
 
 * **Three Dedicated Transaction Experiences:**
   * **Normal Transactions:** Complete ledger with bottom navigation visible.

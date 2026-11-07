@@ -1,0 +1,10 @@
+.gradle
+.kotlin
+app
+gradle
+gradlew
+gradlew.bat
+build_release_assets
+*.apk
+*.jar
+sample.png

@@ -1,18 +1,28 @@
 /* ==========================================================================
    Expend Showcase — Responsive Stylesheet (All Viewports & Device Categories)
+   Engineered for zero horizontal overflow, fluid scaling, and minimal UI
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   0. Global Fluid Safety & Box Consistency
+   0. Global Reset & Overflow Protection
    -------------------------------------------------------------------------- */
-html, body {
-  max-width: 100%;
-  overflow-x: hidden;
+*, *::before, *::after {
+  box-sizing: border-box;
 }
 
-img, svg {
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  -webkit-text-size-adjust: 100%;
+}
+
+img, svg, picture, video {
   max-width: 100%;
   height: auto;
+  display: block;
 }
 
 /* --------------------------------------------------------------------------
@@ -62,20 +72,29 @@ img, svg {
     padding: 0 24px;
   }
 
-  /* Hero Layout */
+  /* Hero Section */
+  .hero {
+    padding: 40px 0 64px 0;
+  }
+
   .hero-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 48px;
+    width: 100%;
   }
 
   .hero-content {
     max-width: 100%;
+    width: 100%;
+    min-width: 0;
     text-align: left;
   }
 
   .hero-mockup-wrapper {
     margin: 0 auto;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -83,6 +102,7 @@ img, svg {
 
   .phone-mockup {
     width: min(340px, calc(100vw - 64px));
+    max-width: 100%;
     height: auto;
     aspect-ratio: 340 / 690;
     margin: 0 auto;
@@ -95,14 +115,37 @@ img, svg {
 
   /* Features Multi-Column on Tablets */
   .features-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 20px;
+    width: 100%;
   }
 
-  /* Get It Layout */
+  .feature-card {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  /* Architecture Diagram */
+  .arch-diagram-wrapper {
+    padding: 32px 24px;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  /* Get It Section */
   .get-it-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) !important;
     gap: 24px;
+    width: 100%;
+  }
+
+  .get-card {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    padding: 32px 26px;
   }
 
   .section {
@@ -111,151 +154,335 @@ img, svg {
 }
 
 /* --------------------------------------------------------------------------
-   4. Large Mobile Phones (431px to 599px)
+   4. Mobile (General <= 599px)
    -------------------------------------------------------------------------- */
 @media (max-width: 599px) {
   .container {
-    padding: 0 20px;
+    padding: 0 16px;
+    width: 100%;
+    max-width: 100%;
   }
 
+  /* Header */
   .top-bar {
-    padding: 24px 0 16px;
+    padding: 20px 0 14px;
+  }
+
+  .top-bar-inner {
+    width: 100%;
+    max-width: 100%;
+    gap: 10px;
+  }
+
+  .brand-badge {
+    min-width: 0;
+    gap: 10px;
   }
 
   .brand-subtext {
-    display: none;
+    display: none !important;
   }
 
   .brand-title {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
   }
 
   .brand-logo-img {
-    width: 30px;
-    height: 30px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  /* Hero Section */
+  .hero {
+    padding: 24px 0 48px;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 36px;
+    width: 100%;
+  }
+
+  .hero-content {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .hero-title {
-    font-size: clamp(2.2rem, 7.5vw, 2.75rem);
+    font-size: clamp(2rem, 7.5vw, 2.75rem);
     line-height: 1.15;
+    margin-bottom: 18px;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .hero-description {
-    font-size: 1.02rem;
+    font-size: 1rem;
     line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+
+  .hero-tags {
+    gap: 8px;
+    margin-bottom: 24px;
+    max-width: 100%;
+  }
+
+  .hero-tag-item {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    max-width: 100%;
+    overflow-wrap: break-word;
   }
 
   .hero-actions {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    width: 100%;
+    max-width: 100%;
+    gap: 10px;
+    margin-bottom: 24px;
   }
 
   .hero-actions .btn-primary {
-    width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
     justify-content: center;
-    min-height: 48px;
+    padding: 12px 18px;
+    min-height: 46px;
+    white-space: normal;
+    text-align: center;
   }
 
   .hero-actions .btn-link {
     width: 100%;
     text-align: center;
     justify-content: center;
-    padding: 10px 0;
+    padding: 8px 0;
   }
 
   .hero-jump-links {
+    flex-wrap: wrap;
     gap: 6px;
+    margin-bottom: 18px;
+    max-width: 100%;
   }
 
   .chip-link {
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     padding: 4px 10px;
   }
 
-  .phone-mockup {
-    width: min(320px, calc(100vw - 40px));
-    aspect-ratio: 340 / 690;
+  .hero-meta {
+    font-size: 0.8rem;
+    line-height: 1.5;
   }
 
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .feature-card {
-    padding: 24px 20px;
-  }
-
-  .section-title {
-    font-size: 1.95rem;
-  }
-
-  .section-lead {
-    font-size: 1.02rem;
-  }
-
-  .get-card {
-    padding: 28px 20px;
-  }
-
-  .section {
-    padding: 56px 0;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   5. Standard Mobile Phones (375px to 430px)
-   -------------------------------------------------------------------------- */
-@media (max-width: 430px) {
-  .container {
-    padding: 0 18px;
-  }
-
-  .hero-tags {
-    gap: 6px;
-  }
-
-  .hero-tag-item {
-    font-size: 0.78rem;
-    padding: 4px 10px;
+  /* Phone Mockup */
+  .hero-mockup-wrapper {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
   }
 
   .phone-mockup {
-    width: min(300px, calc(100vw - 36px));
+    width: min(310px, calc(100vw - 32px)) !important;
+    max-width: 100%;
+    height: auto !important;
     aspect-ratio: 340 / 690;
+    border-radius: 40px;
+    padding: 8px;
+  }
+
+  .phone-screen {
+    border-radius: 32px;
   }
 
   .phone-island {
-    top: 9px;
+    top: 12px;
     height: 18px;
     width: 76px;
   }
 
-  .phone-camera {
-    width: 9px;
-    height: 9px;
+  .mockup-caption-area {
+    max-width: min(310px, calc(100vw - 32px));
+    margin-top: 14px;
   }
 
+  .mockup-caption {
+    font-size: 0.86rem;
+  }
+
+  /* Section Styling */
+  .section {
+    padding: 48px 0;
+  }
+
+  .section-eyebrow {
+    font-size: 0.74rem;
+    margin-bottom: 10px;
+  }
+
+  .section-title {
+    font-size: clamp(1.65rem, 5.5vw, 2.15rem);
+    line-height: 1.2;
+    margin-bottom: 14px;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .section-lead {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  /* Features Grid */
+  .features-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 16px;
+    margin-top: 32px;
+    width: 100%;
+  }
+
+  .feature-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 22px 18px;
+    border-radius: 14px;
+  }
+
+  .feature-card-title {
+    font-size: 1.18rem;
+    overflow-wrap: break-word;
+  }
+
+  .feature-card-desc {
+    font-size: 0.92rem;
+    line-height: 1.6;
+    overflow-wrap: break-word;
+  }
+
+  /* Architecture Section */
+  .arch-diagram-wrapper {
+    margin-top: 32px;
+    padding: 20px 14px;
+    border-radius: 14px;
+    max-width: 100%;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .arch-caption {
+    font-size: 0.88rem;
+    margin-top: 16px;
+  }
+
+  /* Get It Section & Cards */
+  .get-it-section {
+    padding-bottom: 64px;
+  }
+
+  .get-it-header {
+    margin-bottom: 36px;
+  }
+
+  .get-it-icon {
+    width: 46px;
+    height: 46px;
+    margin-bottom: 16px;
+  }
+
+  .get-it-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px;
+    width: 100%;
+  }
+
+  .get-card {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 24px 18px;
+    border-radius: 14px;
+  }
+
+  .get-card-title {
+    font-size: 1.22rem;
+    overflow-wrap: break-word;
+  }
+
+  .get-card-desc {
+    font-size: 0.94rem;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    overflow-wrap: break-word;
+  }
+
+  .get-card .btn-primary {
+    width: 100% !important;
+    max-width: 100% !important;
+    justify-content: center;
+    padding: 12px 16px;
+    white-space: normal;
+    text-align: center;
+    font-size: 0.95rem;
+  }
+
+  /* Code Block — strictly contained with inner horizontal scrolling */
   .code-block {
+    max-width: 100% !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
     padding: 12px 14px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .code-block pre {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre;
+    margin: 0;
+  }
+
+  .code-block code {
+    white-space: pre;
+    word-break: normal;
+    display: inline-block;
+  }
+
+  .get-card-footer {
+    font-size: 0.84rem;
+    overflow-wrap: break-word;
+  }
+
+  /* Project Credit Line */
+  .project-credit-line {
+    padding: 24px 16px 20px;
+    font-size: 0.82rem;
+    line-height: 1.65;
   }
 }
 
 /* --------------------------------------------------------------------------
-   6. Small Mobile Phones (320px to 374px)
+   5. Standard & Small Mobile Phones (<= 375px)
    -------------------------------------------------------------------------- */
-@media (max-width: 374px) {
+@media (max-width: 375px) {
   .container {
     padding: 0 14px;
   }
 
   .top-bar-inner {
-    gap: 10px;
-  }
-
-  .brand-badge {
     gap: 8px;
   }
 
@@ -274,48 +501,71 @@ img, svg {
   }
 
   .theme-btn svg {
-    width: 12px;
-    height: 12px;
+    width: 13px;
+    height: 13px;
   }
 
   .hero-title {
     font-size: 1.95rem;
   }
 
-  .hero-description {
-    font-size: 0.95rem;
-  }
-
   .phone-mockup {
-    width: calc(100vw - 28px);
+    width: calc(100vw - 28px) !important;
     aspect-ratio: 340 / 690;
-    border-radius: 36px;
+    border-radius: 34px;
   }
 
   .phone-screen {
-    border-radius: 30px;
-  }
-
-  .section-title {
-    font-size: 1.7rem;
+    border-radius: 28px;
   }
 
   .feature-card {
-    padding: 20px 16px;
+    padding: 18px 14px;
   }
 
   .get-card {
-    padding: 22px 16px;
+    padding: 20px 14px;
   }
 
   .code-block {
-    font-size: 0.75rem;
     padding: 10px 12px;
+    font-size: 0.76rem;
   }
 }
 
 /* --------------------------------------------------------------------------
-   7. EXPEND Oversized Bottom Typography Banner & Invisible Cursor Glow
+   6. Ultra-Small Mobile Phones (320px to 340px)
+   -------------------------------------------------------------------------- */
+@media (max-width: 340px) {
+  .container {
+    padding: 0 10px;
+  }
+
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .hero-tag-item {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+  }
+
+  .phone-mockup {
+    width: calc(100vw - 20px) !important;
+    aspect-ratio: 340 / 690;
+  }
+
+  .feature-card {
+    padding: 16px 12px;
+  }
+
+  .get-card {
+    padding: 18px 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. EXPEND Oversized Bottom Typography Banner & Fine-Tuned 5-8% Cropping
    -------------------------------------------------------------------------- */
 .brand-typography-banner {
   width: 100%;
@@ -336,9 +586,9 @@ img, svg {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding-top: clamp(24px, 4vw, 56px);
-  /* Height proportioned so bottom 10-15% of the oversized letters extend beyond and are cropped */
-  height: clamp(80px, 17vw, 220px);
+  padding-top: clamp(20px, 3.5vw, 48px);
+  /* Height proportioned so only approximately 5-8% of letter height is clipped */
+  height: clamp(90px, 19.5vw, 255px);
   box-sizing: border-box;
   --glow-x: -999px;
   --glow-y: -999px;
@@ -359,7 +609,8 @@ img, svg {
   white-space: nowrap;
   pointer-events: none;
   display: inline-block;
-  transform: translateY(12%);
+  /* 5-8% subtle intentional bottom cropping */
+  transform: translateY(6%);
   will-change: transform;
 }
 
@@ -373,7 +624,7 @@ img, svg {
 /* Separate Glow layer clipped strictly to cursor proximity */
 .brand-typography-text.glow-text {
   position: absolute;
-  top: clamp(24px, 4vw, 56px);
+  top: clamp(20px, 3.5vw, 48px);
   left: 0;
   right: 0;
   margin: 0 auto;
@@ -382,6 +633,7 @@ img, svg {
   text-shadow: 0 0 20px var(--banner-glow-shadow, rgba(224, 122, 95, 0.45));
   opacity: var(--glow-opacity, 0);
   transition: opacity 0.25s ease;
+  transform: translateY(6%);
   
   /* Radial mask centered on cursor — invisible boundary with soft gradual falloff */
   -webkit-mask-image: radial-gradient(
@@ -411,33 +663,35 @@ img, svg {
 
 @media (max-width: 600px) {
   .brand-typography-clip {
-    padding-top: clamp(16px, 4vw, 28px);
-    height: clamp(70px, 18vw, 110px);
+    padding-top: clamp(14px, 3vw, 24px);
+    height: clamp(75px, 20vw, 125px);
   }
 
   .brand-typography-text {
-    font-size: clamp(4.2rem, 23.5vw, 6.8rem);
-    transform: translateY(13%);
+    font-size: clamp(3.8rem, 23.5vw, 6.5rem);
+    transform: translateY(6.5%);
   }
 
   .brand-typography-text.glow-text {
-    top: clamp(16px, 4vw, 28px);
+    top: clamp(14px, 3vw, 24px);
+    transform: translateY(6.5%);
   }
 }
 
 @media (max-width: 374px) {
   .brand-typography-clip {
-    padding-top: 14px;
-    height: 64px;
+    padding-top: 12px;
+    height: 70px;
   }
 
   .brand-typography-text {
-    font-size: 3.8rem;
-    transform: translateY(14%);
+    font-size: 3.6rem;
+    transform: translateY(7%);
   }
 
   .brand-typography-text.glow-text {
-    top: 14px;
+    top: 12px;
+    transform: translateY(7%);
   }
 }
 

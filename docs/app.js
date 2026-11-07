@@ -83,7 +83,66 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initialize
+  // Initialize Carousel
   setSlide(0);
   startAutoplay();
+
+  // -------------------------------------------------------------------------
+  // Theme Management (Light, Dark, System Default)
+  // -------------------------------------------------------------------------
+  const themeButtons = document.querySelectorAll('.theme-btn');
+  const STORAGE_KEY = 'expend-theme';
+
+  function applyTheme(theme) {
+    if (theme === 'system') {
+      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.setAttribute('data-theme', 'system');
+    } else {
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch (e) {}
+
+    themeButtons.forEach((btn) => {
+      const value = btn.getAttribute('data-theme-value');
+      const isActive = value === theme;
+      btn.classList.toggle('active', isActive);
+      btn.setAttribute('aria-checked', isActive ? 'true' : 'false');
+    });
+  }
+
+  // Restore saved theme or default to system
+  let currentTheme = 'system';
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved && (saved === 'light' || saved === 'dark' || saved === 'system')) {
+      currentTheme = saved;
+    }
+  } catch (e) {}
+  applyTheme(currentTheme);
+
+  themeButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const targetTheme = btn.getAttribute('data-theme-value');
+      if (targetTheme) {
+        applyTheme(targetTheme);
+      }
+    });
+  });
+
+  // Listen for operating-system color scheme changes when on system preference
+  if (window.matchMedia) {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    mediaQuery.addEventListener('change', () => {
+      let saved = 'system';
+      try {
+        saved = localStorage.getItem(STORAGE_KEY) || 'system';
+      } catch (e) {}
+      if (saved === 'system') {
+        applyTheme('system');
+      }
+    });
+  }
 });

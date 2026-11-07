@@ -617,34 +617,49 @@ a {
 }
 
 /* ==========================================================================
-   Brand Typography Banner
+   Brand Typography Banner — Edge-to-Edge with Intentional Bottom Text Cropping
    ========================================================================== */
 .brand-typography-banner {
   width: 100%;
-  background-color: var(--brand-dark);
-  padding: clamp(36px, 6vw, 72px) 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
+  background-color: var(--banner-bg, #000000);
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
   overflow: hidden;
   box-sizing: border-box;
-  border-top: 1px solid var(--brand-dark);
+}
+
+.brand-typography-clip {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: clamp(24px, 4vw, 56px);
+  height: clamp(80px, 17vw, 220px);
+  box-sizing: border-box;
 }
 
 .brand-typography-text {
   font-family: var(--font-main);
   font-weight: 700;
-  font-size: clamp(3.25rem, 15vw, 11.5rem);
-  line-height: 0.95;
-  letter-spacing: clamp(0.02em, 0.05em, 0.08em);
+  font-size: clamp(4.5rem, 23vw, 21rem);
+  line-height: 0.82;
+  letter-spacing: clamp(0.01em, 0.03em, 0.05em);
   text-align: center;
   text-transform: uppercase;
-  color: rgba(250, 247, 242, 0.28);
+  color: var(--banner-text, #262422);
   margin: 0;
   padding: 0;
   user-select: none;
   white-space: nowrap;
   pointer-events: none;
+  display: inline-block;
+  transform: translateY(12%);
+  will-change: transform;
 }
 
 /* ==========================================================================

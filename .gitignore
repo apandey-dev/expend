@@ -21,3 +21,6 @@ build_release_assets/
 
 .vercel
 .env*
+
+sample.png
+docs/.gitignore
